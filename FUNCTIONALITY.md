@@ -16,7 +16,7 @@ Legacy `/items` paths are supported by the same handlers for compatibility.
 - Passwords are stored as scrypt hashes. Password changes require the current password and invalidate the session.
 - LEGO categories can be attached to listings and used as a server-side search filter.
 - Listing and question text passes through a basic English/Chinese profanity filter.
-- Listing drafts can be saved, edited and deleted in browser local storage. Images are selected again before publishing.
+- Listing drafts include their photo and can be saved, edited and deleted in browser local storage. Storage-quota failures preserve the last successfully saved version and show an error.
 - English and Chinese cover the principal pages, controls, loading states and client-side feedback.
 
 ## Data

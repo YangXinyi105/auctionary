@@ -50,7 +50,7 @@
       <div v-else-if="!filteredItems.length" class="empty-copy">
         <h3>{{ query ? $t('No matching sets', '没有匹配的套装') : $t('No auctions yet', '暂无拍卖') }}</h3>
         <p>{{ query ? $t('Try another set name.', '试试其他套装名称。') : $t('Upload a LEGO set to create the first listing.', '上传乐高套装，创建第一个商品。') }}</p>
-        <a v-if="!query" href="#sell">{{ $t('Create a listing', '发布商品') }}</a>
+        <router-link v-if="!query" :to="{ path: '/', hash: '#sell' }">{{ $t('Create a listing', '发布商品') }}</router-link>
       </div>
       <div v-else class="product-grid">
         <ItemCard
@@ -263,19 +263,34 @@ export default {
       }
     },
     async loadCategories() { try { this.categories = (await axios.get(`${API}/categories`, { timeout: 10000 })).data; } catch { this.categories = []; } },
-    loadDrafts() { try { this.drafts = JSON.parse(localStorage.getItem('auction_drafts') || '[]'); } catch { this.drafts = []; } },
-    persistDrafts() {
-      try { localStorage.setItem('auction_drafts', JSON.stringify(this.drafts)); return true; }
+    loadDrafts() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('auction_drafts') || '[]');
+        this.drafts = Array.isArray(saved) ? saved.filter(draft => draft && typeof draft === 'object' && typeof draft.id === 'string') : [];
+      } catch { this.drafts = []; }
+    },
+    persistDrafts(nextDrafts) {
+      try { localStorage.setItem('auction_drafts', JSON.stringify(nextDrafts)); this.drafts = nextDrafts; return true; }
       catch { this.formMessage = this.$t('Draft storage is full. Remove an old draft and retry.', '草稿存储空间已满，请删除旧草稿后重试。'); this.formError = true; return false; }
     },
     saveDraft() {
-      const draft = { id: this.editingDraftId || `${Date.now()}-${Math.random().toString(16).slice(2)}`, ...this.form, duration: this.duration, customDays: this.customDays, customHours: this.customHours, updated_at: Date.now() };
+      const draft = { id: this.editingDraftId || `${Date.now()}-${Math.random().toString(16).slice(2)}`, ...this.form, category_ids: [...this.form.category_ids], imageData: this.imageData, duration: this.duration, customDays: this.customDays, customHours: this.customHours, updated_at: Date.now() };
       const index = this.drafts.findIndex(item => item.id === draft.id);
-      if (index >= 0) this.drafts.splice(index, 1, draft); else this.drafts.unshift(draft);
-      if (this.persistDrafts()) { this.editingDraftId = draft.id; this.formMessage = this.$t('Draft saved in this browser. Add the photo again before publishing.', '草稿已保存在此浏览器中，发布前请重新添加照片。'); this.formError = false; }
+      const nextDrafts = [...this.drafts];
+      if (index >= 0) nextDrafts.splice(index, 1, draft); else nextDrafts.unshift(draft);
+      if (this.persistDrafts(nextDrafts)) { this.editingDraftId = draft.id; this.formMessage = this.$t('Draft and photo saved in this browser.', '草稿和照片已保存在此浏览器中。'); this.formError = false; }
     },
-    editDraft(draft) { this.form = { name: draft.name || '', description: draft.description || '', starting_bid: draft.starting_bid ?? null, category_ids: [...(draft.category_ids || [])], custom_category: draft.custom_category || '' }; this.duration = draft.duration || 604800; this.customDays = draft.customDays ?? 1; this.customHours = draft.customHours ?? 0; this.editingDraftId = draft.id; this.preview = ''; this.imageData = ''; document.getElementById('sell')?.scrollIntoView(); },
-    deleteDraft(id, skipConfirm = false) { if (!skipConfirm && !window.confirm(this.$t('Delete this draft?', '确定删除这份草稿吗？'))) return; this.drafts = this.drafts.filter(draft => draft.id !== id); if (this.editingDraftId === id) this.editingDraftId = null; this.persistDrafts(); },
+    editDraft(draft) {
+      this.form = { name: draft.name || '', description: draft.description || '', starting_bid: draft.starting_bid ?? null, category_ids: Array.isArray(draft.category_ids) ? [...draft.category_ids] : [], custom_category: draft.custom_category || '' };
+      this.duration = draft.duration || 604800;
+      this.customDays = draft.customDays ?? 1;
+      this.customHours = draft.customHours ?? 0;
+      this.editingDraftId = draft.id;
+      this.imageData = typeof draft.imageData === 'string' && /^data:image\/(png|jpeg|webp);base64,/.test(draft.imageData) ? draft.imageData : '';
+      this.preview = this.imageData;
+      document.getElementById('sell')?.scrollIntoView();
+    },
+    deleteDraft(id, skipConfirm = false) { if (!skipConfirm && !window.confirm(this.$t('Delete this draft?', '确定删除这份草稿吗？'))) return; if (this.persistDrafts(this.drafts.filter(draft => draft.id !== id)) && this.editingDraftId === id) this.editingDraftId = null; },
     formatDraftDate(value) { return new Date(value).toLocaleString(); },
     selectImage(event) {
       const file = event.target.files?.[0];
@@ -296,6 +311,7 @@ export default {
       reader.readAsDataURL(file);
     },
     async createListing() {
+      if (this.submitting) return;
       this.formMessage = '';
       this.formError = false;
       if (!localStorage.getItem('session_token')) {

@@ -14,7 +14,7 @@ async function migrate() {
     await run("INSERT INTO app_migrations(name) VALUES('categories-v1')");
 }
 function offensive(text) {
-    const normalized = String(text || '').normalize('NFKC').toLowerCase();
+    const normalized = String(text || '').normalize('NFKC').replace(/[\u200B-\u200D\uFEFF]/g, '').toLowerCase();
     const englishMatch = ENGLISH_WORDS.some((word) => new RegExp(`\\b${word}\\b`, 'i').test(normalized));
     return englishMatch || CHINESE_TERMS.some((term) => normalized.includes(term));
 }
