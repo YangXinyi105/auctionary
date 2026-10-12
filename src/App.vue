@@ -90,19 +90,25 @@ export default {
     window.removeEventListener('avatar-change', this.refresh);
   },
   methods: {
-    refresh() {
+    async refresh() {
       this.loggedIn = Boolean(localStorage.getItem('session_token'));
       this.avatar = localStorage.getItem('avatar') || this.avatar;
+      if (this.loggedIn) {
+        try {
+          const { data } = await axios.get(apiUrl('/users/me'), { headers: { 'X-Authorization': localStorage.getItem('session_token') }, timeout: 10000 });
+          if (data.avatar_url) { this.avatar = data.avatar_url; localStorage.setItem('avatar', data.avatar_url); }
+        } catch { /* Existing session handling remains unchanged. */ }
+      }
     },
     toggle() {
       this.zh = !this.zh;
       localStorage.setItem('lang', this.zh ? 'zh' : 'en');
       window.dispatchEvent(new Event('language-change'));
     },
-    randomAvatar() {
+    async randomAvatar() {
       this.avatarError = '';
       this.avatar = brickAvatars[Math.floor(Math.random() * brickAvatars.length)];
-      saveAvatar(this.avatar);
+      try { await saveAvatar(this.avatar); } catch (error) { this.avatarError = error.response?.data?.error_message || error.message; }
     },
     async uploadAvatar(event) {
       const file = event.target.files[0];

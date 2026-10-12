@@ -32,7 +32,7 @@ const itemSchema = Joi.object({
 module.exports = app => {
     app.get('/categories', wrap(async (req, res) => res.json(await all('SELECT * FROM categories ORDER BY name'))));
     app.get('/users/:user_id', wrap(async (req, res) => {
-        const user = await get('SELECT user_id,first_name,last_name FROM users WHERE user_id=?', [req.params.user_id]);
+        const user = await get('SELECT user_id,first_name,last_name,avatar_url FROM users WHERE user_id=?', [req.params.user_id]);
         if (!user) return res.sendStatus(404);
         const now = Math.floor(Date.now() / 1000);
         user.selling = await all(`${selectItems} WHERE i.creator_id=? AND i.end_date>? ORDER BY i.end_date`, [user.user_id, now]);
@@ -109,7 +109,7 @@ module.exports = app => {
     app.get('/item/:id/question', wrap(async (req, res) => {
         if (!await get('SELECT item_id FROM items WHERE item_id=?', [req.params.id])) return res.sendStatus(404);
         res.json(await all(`SELECT q.question_id,q.question question_text,q.answer answer_text,q.asked_by,
-            u.first_name,u.last_name,u.muted_until
+            u.first_name,u.last_name,u.muted_until,u.avatar_url
             FROM questions q JOIN users u ON u.user_id=q.asked_by
             WHERE q.item_id=? ORDER BY q.question_id DESC`, [req.params.id]));
     }));

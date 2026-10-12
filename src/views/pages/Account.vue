@@ -170,6 +170,7 @@ export default {
       try {
         const { data } = await axios.get(`${API}/users/me`, this.options());
         this.user = data;
+        if (data.avatar_url) { this.avatar = data.avatar_url; localStorage.setItem('avatar', data.avatar_url); window.dispatchEvent(new Event('avatar-change')); }
       } catch (error) {
         const status = error.response?.status;
         if (status === 401) {

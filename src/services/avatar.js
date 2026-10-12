@@ -1,6 +1,12 @@
-export function saveAvatar(value) {
+import axios from 'axios';
+import { apiUrl } from './api';
+
+const authOptions = () => ({ headers: { 'X-Authorization': localStorage.getItem('session_token') }, timeout: 10000 });
+
+export async function saveAvatar(value) {
   localStorage.setItem('avatar', value);
   window.dispatchEvent(new Event('avatar-change'));
+  if (localStorage.getItem('session_token')) await axios.put(apiUrl('/users/avatar'), { avatar_url: value }, authOptions());
 }
 
 export async function uploadAvatarFile(file) {
@@ -22,9 +28,10 @@ export async function uploadAvatarFile(file) {
     canvas.getContext('2d').drawImage(image,
       (image.naturalWidth - side) / 2, (image.naturalHeight - side) / 2,
       side, side, 0, 0, 256, 256);
-    const value = canvas.toDataURL('image/webp', 0.85);
-    saveAvatar(value);
-    return value;
+    const imageData = canvas.toDataURL('image/webp', 0.85);
+    const { data } = await axios.post(apiUrl('/upload-card-image'), { image: imageData }, authOptions());
+    await saveAvatar(data.image_url);
+    return data.image_url;
   } finally {
     URL.revokeObjectURL(url);
   }

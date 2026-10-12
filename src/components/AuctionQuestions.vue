@@ -5,8 +5,14 @@
     <p v-if="error" role="alert">{{ error }} <button type="button" @click="load">{{ $t('Retry', '重试') }}</button></p>
     <p v-if="!loading && !error && !questions.length">{{ $t('No questions yet.', '暂无问题。') }}</p>
     <article v-for="question in questions" :key="question.question_id">
+      <header class="question-author">
+        <router-link :to="`/users/${question.asked_by}`"><img :src="question.avatar_url || defaultAvatar(question.asked_by)" :alt="`${question.first_name} ${question.last_name}`" /></router-link>
+        <div>
+          <router-link class="author-name" :to="`/users/${question.asked_by}`">{{ question.first_name }} {{ question.last_name }}</router-link>
+          <small>{{ $t('Collector', '收藏者') }}<span v-if="question.muted_until && question.muted_until * 1000 > Date.now()"> · {{ $t('Muted', '已禁言') }}</span></small>
+        </div>
+      </header>
       <h3>{{ question.question_text }}</h3>
-      <small class="author">{{ $t('Asked by', '提问者') }} {{ question.first_name }} {{ question.last_name }}<span v-if="question.muted_until && question.muted_until * 1000 > Date.now()"> · {{ $t('Muted', '已禁言') }}</span></small>
       <p v-if="question.answer_text"><strong>{{ $t('Seller:', '卖家：') }}</strong> {{ question.answer_text }}</p>
       <p v-else>{{ $t("Awaiting the seller's reply.", '等待卖家回复。') }}</p>
       <form v-if="isSeller" @submit.prevent="answer(question)">
@@ -31,13 +37,14 @@
 </template>
 <script>
 import axios from 'axios';
-import { API } from '../services/api';
+import { API, apiUrl } from '../services/api';
 export default {
   props: { itemId: Number, isSeller: Boolean },
   data: () => ({ questions: [], answers: {}, questionText: '', loading: true, error: '', message: '', busy: false, signedIn: !!localStorage.getItem('session_token'), isAdmin: false, currentUserId: null }),
   mounted() { this.refreshAuth(); this.load(); window.addEventListener('auth-change', this.refreshAuth); },
   beforeUnmount() { window.removeEventListener('auth-change', this.refreshAuth); },
   methods: {
+    defaultAvatar(id) { return apiUrl(`/uploads/${['lego-10698.jpg', 'lego-60367.jpg', 'lego-10303.jpg'][Number(id || 0) % 3]}`); },
     async refreshAuth() {
       this.signedIn = !!localStorage.getItem('session_token'); this.isAdmin = false; this.currentUserId = null;
       if (!this.signedIn) return;
@@ -79,7 +86,12 @@ export default {
 .questions { margin-top: 36px; border-top: 2px solid var(--line); padding-top: 20px; }
 h2 { font-size: 1.35rem; } h3 { font-size: 1rem; margin: 0; overflow-wrap: anywhere; }
 article { padding: 20px 0; border-bottom: 1px solid var(--line); }
-.author { display: block; margin-top: 6px; color: var(--muted); }
+.question-author { display: flex; align-items: center; gap: 10px; margin-bottom: 13px; }
+.question-author img { width: 38px; height: 38px; border: 1px solid var(--ink); border-radius: var(--radius-control); object-fit: cover; background: var(--surface); }
+.question-author div { display: grid; gap: 2px; }
+.question-author small { color: var(--muted); }
+.author-name { color: var(--ink); font-weight: 750; text-decoration: none; }
+.author-name:hover { color: var(--accent); text-decoration: underline; }
 p { line-height: 1.6; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; }
 form { display: grid; gap: 10px; margin-top: 20px; }
 textarea { width: 100%; padding: 12px; background: var(--surface); color: var(--ink); resize: vertical; border: 1px solid var(--line); }

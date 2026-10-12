@@ -24,6 +24,8 @@ describe('Core Auctionary flows (isolated database)', () => {
         seller = (await request('POST', '/login', { email: 'seller@example.com', password: 'Example123!' })).data;
         buyer = (await request('POST', '/login', { email: 'buyer@example.com', password: 'Example123!' })).data;
         assert.ok(seller.session_token); assert.ok(buyer.session_token);
+        assert.equal((await request('PUT', '/users/avatar', { avatar_url: '/uploads/lego-10698.jpg' }, seller.session_token)).status, 200);
+        assert.equal((await request('GET', '/users/me', undefined, seller.session_token)).data.avatar_url, '/uploads/lego-10698.jpg');
     });
     it('creates an auction without requiring an image; rejects invalid or past values', async () => {
         const item = { name: 'LEGO Test Set', description: 'Complete box', starting_bid: 10, end_date: Math.floor(Date.now()/1000) + 3600 };

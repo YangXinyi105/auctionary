@@ -3,6 +3,7 @@ const { ENGLISH_WORDS, CHINESE_TERMS } = require('../config/profanity');
 async function migrate() {
     await run('ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0').catch(() => {});
     await run('ALTER TABLE users ADD COLUMN muted_until INTEGER').catch(() => {});
+    await run('ALTER TABLE users ADD COLUMN avatar_url TEXT').catch(() => {});
     await run('CREATE TABLE IF NOT EXISTS categories(category_id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL)');
     await run('CREATE TABLE IF NOT EXISTS item_categories(item_id INTEGER NOT NULL,category_id INTEGER NOT NULL,PRIMARY KEY(item_id,category_id),FOREIGN KEY(item_id) REFERENCES items(item_id),FOREIGN KEY(category_id) REFERENCES categories(category_id))');
     for (const name of ['Classic','City','Icons','Creator','NINJAGO','Star Wars','Technic','Botanicals','Gaming','Batman','Other']) await run('INSERT OR IGNORE INTO categories(name) VALUES(?)', [name]);

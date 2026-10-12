@@ -129,7 +129,7 @@ const getCurrentUser = (req, res) => {
     userModel.findByToken(token, (err, user) => {
         if (err) return res.sendStatus(500);
         if (!user) return res.sendStatus(401);
-        res.json({ user_id: user.user_id, first_name: user.first_name, last_name: user.last_name, email: user.email, is_admin: !!user.is_admin, muted_until: user.muted_until || null });
+        res.json({ user_id: user.user_id, first_name: user.first_name, last_name: user.last_name, email: user.email, is_admin: !!user.is_admin, muted_until: user.muted_until || null, avatar_url: user.avatar_url || null });
     });
 };
 
@@ -155,6 +155,18 @@ const changePassword = (req, res) => {
     });
 };
 
+const updateAvatar = (req, res) => {
+    const token = req.get('X-Authorization');
+    const avatarUrl = req.body.avatar_url;
+    if (!token) return res.sendStatus(401);
+    if (typeof avatarUrl !== 'string' || avatarUrl.length > 2048 || !/^(https?:\/\/|\/uploads\/)/i.test(avatarUrl)) return res.status(400).json({ error_message: 'Provide a valid avatar URL' });
+    userModel.findByToken(token, (err, user) => {
+        if (err) return res.sendStatus(500);
+        if (!user) return res.sendStatus(401);
+        userModel.updateAvatar(user.user_id, avatarUrl, updateErr => updateErr ? res.sendStatus(500) : res.json({ avatar_url: avatarUrl }));
+    });
+};
+
 
 
 module.exports = {
@@ -162,5 +174,6 @@ module.exports = {
     login,
     logout,
     getCurrentUser,
-    changePassword
+    changePassword,
+    updateAvatar
 };

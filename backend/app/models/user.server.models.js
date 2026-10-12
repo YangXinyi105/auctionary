@@ -111,12 +111,14 @@ const removeToken = (token, done)=>{
 };
 
 const findByToken = (token, done) => {
-    db.get('SELECT user_id,first_name,last_name,email,is_admin,muted_until FROM users WHERE session_token=?', [token], done);
+    db.get('SELECT user_id,first_name,last_name,email,is_admin,muted_until,avatar_url FROM users WHERE session_token=?', [token], done);
 };
 
 const updatePassword = (user_id, password, done) => {
     require('./passwords').hash(password).then(hash => db.run('UPDATE users SET password=?,session_token=NULL WHERE user_id=?', [hash, user_id], done)).catch(done);
 };
+
+const updateAvatar = (user_id, avatarUrl, done) => db.run('UPDATE users SET avatar_url=? WHERE user_id=?', [avatarUrl, user_id], done);
 
 
 module.exports = {
@@ -125,5 +127,6 @@ module.exports = {
     saveToken,
     removeToken,
     findByToken,
-    updatePassword
+    updatePassword,
+    updateAvatar
 };

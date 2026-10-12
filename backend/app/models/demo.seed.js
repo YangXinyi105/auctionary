@@ -29,6 +29,8 @@ async function seed() {
         if (!await get('SELECT user_id FROM users WHERE email=?', ['admin@auctionary.example'])) {
             await run('INSERT INTO users(first_name,last_name,email,password,is_admin) VALUES(?,?,?,?,1)', ['Auctionary', 'Admin', 'admin@auctionary.example', await hash('Admin123!')]);
         }
+        for (const [id, avatar] of [[1, '/uploads/lego-minecraft.png'], [2, '/uploads/lego-10698.jpg'], [3, '/uploads/lego-60367.jpg'], [4, '/uploads/lego-10303.jpg']]) await run('UPDATE users SET avatar_url=COALESCE(avatar_url,?) WHERE user_id=?', [avatar, id]);
+        await run("UPDATE users SET avatar_url=COALESCE(avatar_url,'/uploads/lego-71799.jpg') WHERE email='admin@auctionary.example'");
         return;
     }
     const now = Math.floor(Date.now() / 1000);
@@ -38,6 +40,8 @@ async function seed() {
             await run('INSERT INTO users(user_id,first_name,last_name,email,password,salt,session_token) VALUES(?,?,?,?,?,NULL,NULL)', [id, firstName, lastName, email, await hash(password)]);
         }
         await run('INSERT INTO users(first_name,last_name,email,password,is_admin) VALUES(?,?,?,?,1)', ['Auctionary', 'Admin', 'admin@auctionary.example', await hash('Admin123!')]);
+        for (const [id, avatar] of [[1, '/uploads/lego-minecraft.png'], [2, '/uploads/lego-10698.jpg'], [3, '/uploads/lego-60367.jpg'], [4, '/uploads/lego-10303.jpg']]) await run('UPDATE users SET avatar_url=? WHERE user_id=?', [avatar, id]);
+        await run("UPDATE users SET avatar_url='/uploads/lego-71799.jpg' WHERE email='admin@auctionary.example'");
         for (const [index, item] of items.entries()) {
             const [id, name, description, price, creatorId, image, categories] = item;
             await run('INSERT INTO items(item_id,name,description,starting_bid,start_date,end_date,creator_id) VALUES(?,?,?,?,?,?,?)', [id, name, description, price, now - 86400, now + (index + 2) * 86400, creatorId]);
