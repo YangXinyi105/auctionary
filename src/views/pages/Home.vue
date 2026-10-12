@@ -134,12 +134,17 @@
 
             <label>
               <span>{{ $t('Auction duration', '拍卖时长') }}</span>
-              <select v-model.number="duration">
+              <select v-model="duration">
                 <option :value="86400">{{ $t('24 hours', '24 小时') }}</option>
                 <option :value="259200">{{ $t('3 days', '3 天') }}</option>
                 <option :value="604800">{{ $t('7 days', '7 天') }}</option>
                 <option :value="1209600">{{ $t('14 days', '14 天') }}</option>
+                <option value="custom">{{ $t('Custom duration', '自定义时长') }}</option>
               </select>
+              <span v-if="duration === 'custom'" class="custom-duration">
+                <span><small>{{ $t('Days', '天') }}</small><input v-model.number="customDays" type="number" min="0" max="365" step="1" inputmode="numeric" /></span>
+                <span><small>{{ $t('Hours', '小时') }}</small><input v-model.number="customHours" type="number" min="0" max="23" step="1" inputmode="numeric" /></span>
+              </span>
             </label>
           </div>
 
@@ -197,6 +202,8 @@ export default {
     preview: '',
     imageData: '',
     duration: 604800,
+    customDays: 1,
+    customHours: 0,
     submitting: false,
     formMessage: '',
     formError: false,
@@ -211,6 +218,10 @@ export default {
   computed: {
     otherCategory() { return this.categories.find(category => category.name === 'Other'); },
     otherSelected() { return !!this.otherCategory && this.form.category_ids.includes(this.otherCategory.category_id); },
+    auctionDuration() {
+      if (this.duration !== 'custom') return Number(this.duration);
+      return (Number(this.customDays) || 0) * 86400 + (Number(this.customHours) || 0) * 3600;
+    },
     filteredItems() {
       return this.items
         .filter((item) => item.name.toLowerCase().includes(this.query.toLowerCase()))
@@ -258,12 +269,12 @@ export default {
       catch { this.formMessage = this.$t('Draft storage is full. Remove an old draft and retry.', '草稿存储空间已满，请删除旧草稿后重试。'); this.formError = true; return false; }
     },
     saveDraft() {
-      const draft = { id: this.editingDraftId || `${Date.now()}-${Math.random().toString(16).slice(2)}`, ...this.form, duration: this.duration, updated_at: Date.now() };
+      const draft = { id: this.editingDraftId || `${Date.now()}-${Math.random().toString(16).slice(2)}`, ...this.form, duration: this.duration, customDays: this.customDays, customHours: this.customHours, updated_at: Date.now() };
       const index = this.drafts.findIndex(item => item.id === draft.id);
       if (index >= 0) this.drafts.splice(index, 1, draft); else this.drafts.unshift(draft);
       if (this.persistDrafts()) { this.editingDraftId = draft.id; this.formMessage = this.$t('Draft saved in this browser. Add the photo again before publishing.', '草稿已保存在此浏览器中，发布前请重新添加照片。'); this.formError = false; }
     },
-    editDraft(draft) { this.form = { name: draft.name || '', description: draft.description || '', starting_bid: draft.starting_bid ?? null, category_ids: [...(draft.category_ids || [])], custom_category: draft.custom_category || '' }; this.duration = draft.duration || 604800; this.editingDraftId = draft.id; this.preview = ''; this.imageData = ''; document.getElementById('sell')?.scrollIntoView(); },
+    editDraft(draft) { this.form = { name: draft.name || '', description: draft.description || '', starting_bid: draft.starting_bid ?? null, category_ids: [...(draft.category_ids || [])], custom_category: draft.custom_category || '' }; this.duration = draft.duration || 604800; this.customDays = draft.customDays ?? 1; this.customHours = draft.customHours ?? 0; this.editingDraftId = draft.id; this.preview = ''; this.imageData = ''; document.getElementById('sell')?.scrollIntoView(); },
     deleteDraft(id, skipConfirm = false) { if (!skipConfirm && !window.confirm(this.$t('Delete this draft?', '确定删除这份草稿吗？'))) return; this.drafts = this.drafts.filter(draft => draft.id !== id); if (this.editingDraftId === id) this.editingDraftId = null; this.persistDrafts(); },
     formatDraftDate(value) { return new Date(value).toLocaleString(); },
     selectImage(event) {
@@ -298,6 +309,11 @@ export default {
         this.formError = true;
         return;
       }
+      if (!Number.isInteger(this.auctionDuration) || this.auctionDuration < 3600 || this.auctionDuration > 365 * 86400) {
+        this.formMessage = this.$t('Choose a duration between 1 hour and 365 days.', '请选择 1 小时到 365 天之间的拍卖时长。');
+        this.formError = true;
+        return;
+      }
 
       this.submitting = true;
       try {
@@ -307,7 +323,7 @@ export default {
           `${API}/item`,
           {
             ...this.form,
-            end_date: Math.floor(Date.now() / 1000) + this.duration,
+            end_date: Math.floor(Date.now() / 1000) + this.auctionDuration,
             image_url: upload.data.image_url
           },
           { headers }
@@ -746,6 +762,20 @@ export default {
   grid-template-columns: 1fr 1fr;
   gap: 18px;
 }
+
+.custom-duration {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface-muted);
+}
+
+.custom-duration > span { display: grid; gap: 6px; }
+.custom-duration small { margin: 0 !important; color: var(--muted); font-weight: 650 !important; }
+.custom-duration input { width: 100%; background: var(--surface); }
 
 .price-input {
   display: flex;
