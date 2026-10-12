@@ -1,0 +1,80 @@
+/* Pixel-style shapes with clear sans-serif typography throughout. */
+#app .app { background: var(--page); }
+#app .site-header {
+  background: var(--surface);
+  border-bottom: 3px solid var(--ink);
+  backdrop-filter: none;
+  box-shadow: 0 5px 0 #d4d9c5;
+}
+#app .logo { font-family: var(--pixel-font); font-size: 1.7rem; letter-spacing: 0; }
+#app .logo > b { border: 2px solid var(--ink); border-radius: 0; box-shadow: 3px 3px 0 var(--ink); }
+#app .logo > b::before, #app .logo > b::after { border-radius: 0; }
+#app .site-header nav a { border-bottom: 3px solid transparent; }
+#app .site-header nav a.router-link-exact-active { border-bottom-color: var(--accent); }
+#app .profile-menu { border: 2px solid var(--ink); }
+#app .profile-menu button, #app .profile-menu .upload { border-radius: 0; }
+#app .avatar-button img, #app .avatar { border: 2px solid var(--ink); }
+#app main h1, #app main h2 {
+  font-family: var(--pixel-font);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.12;
+}
+#app .intro {
+  margin-top: 32px;
+  padding: 40px;
+  gap: 40px;
+  border: 3px solid var(--ink);
+  background: #f9dc75;
+  box-shadow: 7px 7px 0 var(--ink);
+  align-items: center;
+}
+#app .intro h1 { font-size: clamp(2.6rem, 4.8vw, 4.5rem); max-width: 650px; }
+#app .kicker { font-family: var(--pixel-font); font-size: 1rem; letter-spacing: .03em; color: #772c23; }
+#app .intro-copy > p:not(.kicker) { color: #454939; }
+#app .intro-meta { padding: 24px; border: 2px solid var(--ink); background: var(--surface); box-shadow: 5px 5px 0 #b89d46; }
+#app .intro-meta strong { font-family: var(--pixel-font); font-size: 4rem; letter-spacing: 0; }
+#app .market > .collection { padding-top: 55px; }
+#app .section-heading h2 { font-size: clamp(2rem, 3vw, 2.8rem); }
+#app .primary-link, #app .signin, #app .publish,
+#app .primary-button, #app .secondary-button, #app .collection button,
+#app .choose-file, #app .change-photo {
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 80ms steps(2), box-shadow 80ms steps(2);
+}
+#app .primary-link:active, #app .signin:active, #app .publish:active,
+#app .primary-button:active, #app .secondary-button:active, #app .collection button:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+#app input:not([type=file]), #app select, #app textarea { border-radius: 0; border-color: #858d78; box-shadow: inset 2px 2px 0 #e1e4d7; }
+#app .art { aspect-ratio: 1; border: 2px solid var(--ink); box-shadow: 4px 4px 0 #bbc3ac; transition: transform 100ms steps(2); }
+#app .lot:hover .art { transform: translate(-2px, -2px); border-color: var(--ink); box-shadow: 6px 6px 0 var(--accent); }
+#app .caption { padding-top: 16px; }
+#app .caption strong { font-family: var(--pixel-font); font-size: 1.05rem; line-height: 1.4; font-variant-numeric: tabular-nums; }
+#app .studio, #app .panel { border: 2px solid var(--ink); }
+#app .dropzone { border: 2px dashed #78816a; }
+#app .upload-mark { font-family: var(--pixel-font); border: 2px solid var(--ink); box-shadow: 3px 3px 0 #bbc3ac; }
+#app .password-panel { border-left: 4px solid var(--accent); }
+#app progress { height: 16px; border: 2px solid var(--ink); border-radius: 0; background: var(--surface-muted); }
+#app progress::-webkit-progress-bar { background: var(--surface-muted); }
+#app progress::-webkit-progress-value { background: repeating-linear-gradient(90deg, var(--accent) 0 12px, #942929 12px 15px); }
+#app progress::-moz-progress-bar { background: repeating-linear-gradient(90deg, var(--accent) 0 12px, #942929 12px 15px); }
+#app .entry-heading strong { font-family: var(--pixel-font); font-size: 1.6rem; }
+#app .site-footer { border-top: 3px solid var(--ink); }
+#app .site-footer strong { font-family: var(--pixel-font); font-size: 1.4rem; letter-spacing: 0; }
+@media (max-width: 760px) {
+  #app .intro { padding: 26px; grid-template-columns: 1fr; gap: 24px; }
+  #app .intro-meta { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; align-items: center; padding: 16px; }
+  #app .intro-meta strong { grid-row: span 2; font-size: 3rem; }
+  #app .intro-meta small { margin-top: 0; max-width: none; }
+  #app .intro h1 { font-size: clamp(2.3rem, 9vw, 3.5rem); }
+  #app .logo { font-size: 1.4rem; }
+  #app .caption { flex-wrap: wrap; gap: 6px; }
+  #app .site-footer { gap: 16px; flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #app .lot:hover .art, #app button:active, #app .primary-link:active { transform: none; }
+}
