@@ -8,6 +8,7 @@ const crypto = require('crypto');
 
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(cors({ exposedHeaders: ['X-Total-Count'] }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -52,7 +53,8 @@ app.post('/upload-card-image', (req, res) => {
         const filename = `${crypto.randomUUID()}${ext}`;
         fs.writeFile(path.join(dir, filename), image, writeErr => {
             if (writeErr) return res.sendStatus(500);
-            res.status(201).json({ image_url: `http://localhost:${HTTP_PORT}/uploads/${filename}` });
+            const publicOrigin = process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
+            res.status(201).json({ image_url: `${publicOrigin}/uploads/${filename}` });
         });
     });
 });
