@@ -41,7 +41,8 @@ const router = createRouter({
             path: '/account',
             name: 'Account',
             component: Account
-        }
+        },
+        { path: '/:pathMatch(.*)*', redirect: '/' }
 
     ]
 

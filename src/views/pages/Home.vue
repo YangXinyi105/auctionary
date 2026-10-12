@@ -5,7 +5,7 @@
         <p class="kicker">{{ $t('Brick collector marketplace', '积木收藏者市场') }}</p>
         <h1 id="market-title">{{ $t('LEGO set auctions.', '乐高套装拍卖.') }}</h1>
         <p>{{ $t('Buy, sell and bid on LEGO sets from other collectors.', '购买、出售并竞拍其他收藏者的乐高套装。') }}</p>
-        <a class="primary-link" href="#lots">{{ $t('Browse auctions', '浏览拍卖') }}</a>
+        <button class="primary-link" type="button" @click="scrollToLots">{{ $t('Browse auctions', '浏览拍卖') }}</button>
       </div>
       <div class="intro-meta" aria-live="polite">
         <strong>{{ total }}</strong>
@@ -229,6 +229,9 @@ export default {
   },
   beforeUnmount() { clearTimeout(this.searchTimer); },
   methods: {
+    scrollToLots() {
+      document.getElementById('lots')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    },
     scheduleSearch() { clearTimeout(this.searchTimer); this.searchTimer = setTimeout(() => { this.offset = 0; this.load(); }, 250); },
     async load() {
       const sequence = ++this.loadSequence;
