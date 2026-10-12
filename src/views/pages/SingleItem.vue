@@ -2,7 +2,7 @@
   <main class="detail">
     <router-link class="back" to="/">← {{ $t('Back to auctions', '返回拍卖市场') }}</router-link>
 
-    <div v-if="loading" class="notice" role="status">{{ $t('Loading auction...', '正在加载拍卖…') }}</div>
+    <GooLoader v-if="loading" :label="$t('Loading auction...', '正在加载拍卖…')" />
     <div v-else-if="error" class="notice" role="alert">
       <p>{{ error }}</p>
       <button type="button" @click="load">{{ $t('Try again', '重试') }}</button>
@@ -86,12 +86,13 @@
 <script>
 import axios from 'axios';
 import AuctionQuestions from '../../components/AuctionQuestions.vue';
+import GooLoader from '../../components/GooLoader.vue';
 import { getItem } from '../../services/core.service';
 import { API } from '../../services/api';
 
 export default {
   name: 'SingleItem',
-  components: { AuctionQuestions },
+  components: { AuctionQuestions, GooLoader },
   data: () => ({
     item: {},
     bids: [],

@@ -8,7 +8,7 @@
         <p>{{ $t('Manage your profile photo and account password.', '管理头像和账户密码。') }}</p>
       </header>
 
-      <GooLoader v-if="loading" label="Loading account..." />
+      <GooLoader v-if="loading" :label="$t('Loading account...', '正在加载账户…')" />
       <div v-else-if="error" class="notice" role="alert">
         <p>{{ error }}</p>
         <router-link v-if="unauthorized" class="primary-button" to="/login">{{ $t('Sign in', '登录') }}</router-link>

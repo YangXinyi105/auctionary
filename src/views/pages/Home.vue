@@ -42,7 +42,7 @@
         </label>
       </div>
 
-      <GooLoader v-if="loading" label="Loading auctions..." />
+      <GooLoader v-if="loading" :label="$t('Loading auctions...', '正在加载拍卖…')" />
       <div v-else-if="error" class="feedback" role="alert">
         <p>{{ error }}</p>
         <button type="button" @click="load">{{ $t('Try again', '重试') }}</button>

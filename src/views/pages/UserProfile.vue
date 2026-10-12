@@ -1,7 +1,7 @@
 <template>
   <main class="profile-page">
     <router-link to="/">← {{ $t('Back to auctions', '返回拍卖市场') }}</router-link>
-    <p v-if="loading" role="status">{{ $t('Loading profile...', '正在加载主页…') }}</p>
+    <GooLoader v-if="loading" :label="$t('Loading profile...', '正在加载主页…')" />
     <p v-else-if="error" role="alert">{{ error }} <button @click="load">{{ $t('Retry', '重试') }}</button></p>
     <template v-else>
       <header class="profile-heading">
@@ -18,10 +18,11 @@
 </template>
 <script>
 import axios from 'axios';
+import GooLoader from '../../components/GooLoader.vue';
 import ItemCard from '../../components/ItemCard.vue';
 import { apiUrl } from '../../services/api';
 export default {
-  components: { ItemCard },
+  components: { ItemCard, GooLoader },
   data: () => ({ loading: true, error: '', profile: {}, groups: [{ key: 'selling', title: 'Selling', zh: '正在出售' }, { key: 'bidding_on', title: 'Bidding on', zh: '参与竞价' }, { key: 'auctions_ended', title: 'Ended auctions', zh: '已结束拍卖' }] }),
   mounted() { this.load(); },
   watch: { '$route.params.id'() { this.load(); } },

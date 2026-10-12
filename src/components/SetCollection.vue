@@ -3,7 +3,7 @@
     <header><div><p class="eyebrow">MY BRICKS</p><h2 id="collection-title">{{ t('套装收集进度', 'Set collection progress') }}</h2></div>
       <button type="button" :disabled="busy" @click="start()">{{ t('+ 添加套装', '+ Add set') }}</button></header>
     <p class="hint">{{ t('记录每套乐高已收集的零件，离完整套装更近一步。', 'Track the pieces you own for each LEGO set.') }}</p>
-    <p v-if="loading" role="status">{{ t('正在加载…', 'Loading…') }}</p>
+    <GooLoader v-if="loading" compact :label="t('正在加载收集进度…', 'Loading collection progress...')" />
     <p v-if="error" class="error" role="alert">{{ error }} <button v-if="loadFailed" @click="load">{{ t('重试', 'Retry') }}</button></p>
     <p v-if="!loading && !loadFailed && !entries.length" class="empty">{{ t('还没有记录。添加你正在收集的第一套乐高。', 'No sets yet. Add the first set you are collecting.') }}</p>
     <article v-for="entry in entries" :key="entry.collection_id" class="entry">
@@ -27,8 +27,10 @@
 
 <script>
 import axios from 'axios';
+import GooLoader from './GooLoader.vue';
 import { API } from '../services/api';
 export default {
+  components: { GooLoader },
   data: () => ({ entries: [], setNames: [], draft: null, loading: true, loadFailed: false, busy: false, error: '', message: '', zh: localStorage.getItem('lang') === 'zh' }),
   mounted() { this.load(); window.addEventListener('language-change', this.language); },
   beforeUnmount() { window.removeEventListener('language-change', this.language); },

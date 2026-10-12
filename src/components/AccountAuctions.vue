@@ -4,7 +4,7 @@
     <div class="tabs" :aria-label="$t('Auction filters', '拍卖筛选')">
       <button v-for="tab in tabs" :key="tab.value" :aria-pressed="status === tab.value" @click="status = tab.value; offset = 0; load()">{{ $t(tab.label, tab.zh) }}</button>
     </div>
-    <p v-if="loading" role="status">{{ $t('Loading auctions...', '正在加载拍卖…') }}</p>
+    <GooLoader v-if="loading" compact :label="$t('Loading auctions...', '正在加载拍卖…')" />
     <p v-else-if="error" role="alert">{{ error }} <button @click="load">{{ $t('Retry', '重试') }}</button></p>
     <p v-else-if="!items.length">{{ $t('No auctions in this list yet.', '这个列表中暂无拍卖。') }}</p>
     <router-link v-for="item in items" v-show="!loading && !error" :key="item.item_id" :to="`/item/${item.item_id}`" class="auction-row">
@@ -16,8 +16,10 @@
 </template>
 <script>
 import axios from 'axios';
+import GooLoader from './GooLoader.vue';
 import { apiUrl } from '../services/api';
 export default {
+  components: { GooLoader },
   data: () => ({ tabs: [{ value: 'OPEN', label: 'Selling', zh: '正在出售' }, { value: 'BID', label: 'My bids', zh: '我的竞价' }, { value: 'ARCHIVE', label: 'Ended listings', zh: '已结束' }], status: 'OPEN', items: [], offset: 0, hasMore: false, loading: false, error: '', sequence: 0 }),
   mounted() { this.load(); },
   methods: {

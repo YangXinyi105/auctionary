@@ -1,7 +1,7 @@
 <template>
   <section class="questions">
     <h2>{{ $t('Questions & answers', '问答') }}</h2>
-    <p v-if="loading" role="status">{{ $t('Loading questions...', '正在加载问题…') }}</p>
+    <GooLoader v-if="loading" compact :label="$t('Loading questions...', '正在加载问题…')" />
     <p v-if="error" role="alert">{{ error }} <button type="button" @click="load">{{ $t('Retry', '重试') }}</button></p>
     <p v-if="!loading && !error && !questions.length">{{ $t('No questions yet.', '暂无问题。') }}</p>
     <article v-for="question in questions" :key="question.question_id">
@@ -37,8 +37,10 @@
 </template>
 <script>
 import axios from 'axios';
+import GooLoader from './GooLoader.vue';
 import { API, apiUrl } from '../services/api';
 export default {
+  components: { GooLoader },
   props: { itemId: Number, isSeller: Boolean },
   data: () => ({ questions: [], answers: {}, questionText: '', loading: true, error: '', message: '', busy: false, signedIn: !!localStorage.getItem('session_token'), isAdmin: false, currentUserId: null }),
   mounted() { this.refreshAuth(); this.load(); window.addEventListener('auth-change', this.refreshAuth); },
