@@ -21,6 +21,13 @@ const validate = (res, schema, body, convert = false) => {
     if (error) { fail(res, 400, error.details[0].message); return null; }
     return value;
 };
+const parseId = (res, raw, label) => {
+    if (!/^\d+$/.test(String(raw)) || !Number.isSafeInteger(Number(raw))) {
+        fail(res, 400, `Invalid ${label} ID.`);
+        return null;
+    }
+    return Number(raw);
+};
 const itemSchema = Joi.object({
     name: Joi.string().trim().required(), description: Joi.string().trim().required(),
     starting_bid: Joi.number().integer().min(0).max(Number.MAX_SAFE_INTEGER).required(),
@@ -32,7 +39,8 @@ const itemSchema = Joi.object({
 module.exports = app => {
     app.get('/categories', wrap(async (req, res) => res.json(await all('SELECT * FROM categories ORDER BY name'))));
     app.get('/users/:user_id', wrap(async (req, res) => {
-        const user = await get('SELECT user_id,first_name,last_name,avatar_url FROM users WHERE user_id=?', [req.params.user_id]);
+        const userId = parseId(res, req.params.user_id, 'user'); if (userId === null) return;
+        const user = await get('SELECT user_id,first_name,last_name,avatar_url FROM users WHERE user_id=?', [userId]);
         if (!user) return res.sendStatus(404);
         const now = Math.floor(Date.now() / 1000);
         user.selling = await all(`${selectItems} WHERE i.creator_id=? AND i.end_date>? ORDER BY i.end_date`, [user.user_id, now]);
@@ -82,20 +90,23 @@ module.exports = app => {
         res.status(201).json({ item_id: result.id });
     }));
     app.get(['/item/:id', '/items/:id'], wrap(async (req, res) => {
-        const item = await get(`${selectItems} WHERE i.item_id=?`, [req.params.id]);
+        const itemId = parseId(res, req.params.id, 'item'); if (itemId === null) return;
+        const item = await get(`${selectItems} WHERE i.item_id=?`, [itemId]);
         if (!item) return res.sendStatus(404);
         item.current_bid_holder = await get('SELECT u.user_id,u.first_name,u.last_name FROM bids b JOIN users u ON u.user_id=b.user_id WHERE b.item_id=? ORDER BY b.amount DESC,b.timestamp ASC LIMIT 1', [item.item_id]) || null;
         item.categories = await all('SELECT c.* FROM categories c JOIN item_categories ic ON ic.category_id=c.category_id WHERE ic.item_id=?', [item.item_id]);
         res.json(item);
     }));
     app.get(['/item/:id/bid', '/items/:id/bids'], wrap(async (req, res) => {
-        if (!await get('SELECT item_id FROM items WHERE item_id=?', [req.params.id])) return res.sendStatus(404);
-        res.json(await all('SELECT b.*,u.first_name,u.last_name FROM bids b JOIN users u ON u.user_id=b.user_id WHERE b.item_id=? ORDER BY b.amount DESC,b.timestamp DESC', [req.params.id]));
+        const itemId = parseId(res, req.params.id, 'item'); if (itemId === null) return;
+        if (!await get('SELECT item_id FROM items WHERE item_id=?', [itemId])) return res.sendStatus(404);
+        res.json(await all('SELECT b.*,u.first_name,u.last_name FROM bids b JOIN users u ON u.user_id=b.user_id WHERE b.item_id=? ORDER BY b.amount DESC,b.timestamp DESC', [itemId]));
     }));
     app.post(['/item/:id/bid', '/items/:id/bids'], wrap(async (req, res) => {
         const user = await auth(req, res); if (!user) return;
         const value = validate(res, Joi.object({ amount: Joi.number().integer().positive().max(Number.MAX_SAFE_INTEGER).required() }), req.body); if (!value) return;
-        const item = await get('SELECT * FROM items WHERE item_id=?', [req.params.id]);
+        const itemId = parseId(res, req.params.id, 'item'); if (itemId === null) return;
+        const item = await get('SELECT * FROM items WHERE item_id=?', [itemId]);
         if (!item) return res.sendStatus(404);
         if (item.creator_id === user) return fail(res, 403, 'You cannot bid on your own auction.');
         // The condition and insert execute in one SQLite statement, preventing concurrent stale bids.
@@ -107,11 +118,12 @@ module.exports = app => {
         res.sendStatus(201);
     }));
     app.get('/item/:id/question', wrap(async (req, res) => {
-        if (!await get('SELECT item_id FROM items WHERE item_id=?', [req.params.id])) return res.sendStatus(404);
+        const itemId = parseId(res, req.params.id, 'item'); if (itemId === null) return;
+        if (!await get('SELECT item_id FROM items WHERE item_id=?', [itemId])) return res.sendStatus(404);
         res.json(await all(`SELECT q.question_id,q.question question_text,q.answer answer_text,q.asked_by,
             u.first_name,u.last_name,u.muted_until,u.avatar_url
             FROM questions q JOIN users u ON u.user_id=q.asked_by
-            WHERE q.item_id=? ORDER BY q.question_id DESC`, [req.params.id]));
+            WHERE q.item_id=? ORDER BY q.question_id DESC`, [itemId]));
     }));
     app.post('/item/:id/question', wrap(async (req, res) => {
         const user = await auth(req, res); if (!user) return;
@@ -119,32 +131,36 @@ module.exports = app => {
         if (account.muted_until && account.muted_until > Math.floor(Date.now() / 1000)) return fail(res, 403, 'Your account is muted and cannot post questions yet.');
         const value = validate(res, Joi.object({ question_text: Joi.string().trim().required() }), req.body); if (!value) return;
         if (offensive(value.question_text)) return fail(res, 400, 'Please remove offensive language from the question.');
-        const item = await get('SELECT creator_id FROM items WHERE item_id=?', [req.params.id]);
+        const itemId = parseId(res, req.params.id, 'item'); if (itemId === null) return;
+        const item = await get('SELECT creator_id FROM items WHERE item_id=?', [itemId]);
         if (!item) return res.sendStatus(404);
         if (item.creator_id === user) return fail(res, 403, 'You cannot ask a question on your own item.');
-        await run('INSERT INTO questions(question,asked_by,item_id) VALUES(?,?,?)', [value.question_text, user, req.params.id]);
+        await run('INSERT INTO questions(question,asked_by,item_id) VALUES(?,?,?)', [value.question_text, user, itemId]);
         res.sendStatus(200);
     }));
     app.post('/question/:id', wrap(async (req, res) => {
         const user = await auth(req, res); if (!user) return;
         const value = validate(res, Joi.object({ answer_text: Joi.string().trim().required() }), req.body); if (!value) return;
         if (offensive(value.answer_text)) return fail(res, 400, 'Please remove offensive language from the answer.');
-        const question = await get('SELECT i.creator_id FROM questions q JOIN items i ON i.item_id=q.item_id WHERE q.question_id=?', [req.params.id]);
+        const questionId = parseId(res, req.params.id, 'question'); if (questionId === null) return;
+        const question = await get('SELECT i.creator_id FROM questions q JOIN items i ON i.item_id=q.item_id WHERE q.question_id=?', [questionId]);
         if (!question) return res.sendStatus(404);
         if (question.creator_id !== user) return fail(res, 403, 'Only the seller can answer this question.');
-        await run('UPDATE questions SET answer=? WHERE question_id=?', [value.answer_text, req.params.id]);
+        await run('UPDATE questions SET answer=? WHERE question_id=?', [value.answer_text, questionId]);
         res.sendStatus(200);
     }));
     app.delete('/question/:id', wrap(async (req, res) => {
         if (!await admin(req, res)) return;
-        const result = await run('DELETE FROM questions WHERE question_id=?', [req.params.id]);
+        const questionId = parseId(res, req.params.id, 'question'); if (questionId === null) return;
+        const result = await run('DELETE FROM questions WHERE question_id=?', [questionId]);
         if (!result.changes) return res.sendStatus(404);
         res.sendStatus(200);
     }));
     app.put('/admin/users/:id/mute', wrap(async (req, res) => {
         const moderator = await admin(req, res); if (!moderator) return;
         const value = validate(res, Joi.object({ hours: Joi.number().integer().min(0).max(720).required() }), req.body); if (!value) return;
-        const target = await get('SELECT user_id,is_admin FROM users WHERE user_id=?', [req.params.id]);
+        const userId = parseId(res, req.params.id, 'user'); if (userId === null) return;
+        const target = await get('SELECT user_id,is_admin FROM users WHERE user_id=?', [userId]);
         if (!target) return res.sendStatus(404);
         if (target.is_admin) return fail(res, 403, 'Administrators cannot mute other administrators.');
         const mutedUntil = value.hours === 0 ? null : Math.floor(Date.now() / 1000) + value.hours * 3600;

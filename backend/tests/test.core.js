@@ -109,6 +109,12 @@ describe('Core Auctionary flows (isolated database)', () => {
         for (const path of ['/item/9999', '/item/9999/bid', '/item/9999/question', '/users/9999']) assert.equal((await request('GET', path)).status, 404);
         assert.equal((await request('POST', '/question/9999', { answer_text: 'Yes' }, seller.session_token)).status, 404);
     });
+    it('rejects malformed documented path IDs before looking up resources', async () => {
+        for (const path of ['/item/not-an-id', '/item/not-an-id/bid', '/item/not-an-id/question', '/users/not-an-id']) {
+            assert.equal((await request('GET', path)).status, 400);
+        }
+        assert.equal((await request('POST', '/question/not-an-id', { answer_text: 'Yes' }, seller.session_token)).status, 400);
+    });
     it('invalidates the server session on logout', async () => {
         assert.equal((await request('POST', '/logout', {}, buyer.session_token)).status, 200);
         assert.equal((await request('GET', '/users/me', undefined, buyer.session_token)).status, 401);
