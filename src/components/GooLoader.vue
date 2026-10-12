@@ -2,7 +2,7 @@
   <div class="goo-loader" :class="{ compact }" role="status" :aria-label="label">
     <svg class="filter" aria-hidden="true" width="0" height="0"><defs><filter :id="filterId" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"/><feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 21 -7"/></filter></defs></svg>
     <svg aria-hidden="true" width="150" height="54" viewBox="0 0 150 54"><g :filter="`url(#${filterId})`"><circle class="circle" cx="75" cy="27" r="12"/><circle class="circle right" cx="75" cy="27" r="12"/></g></svg>
-    <span>{{ label }}</span>
+    <span v-if="showLabel">{{ label }}</span>
   </div>
 </template>
 <script>
@@ -11,7 +11,8 @@ export default {
   name: 'GooLoader',
   props: {
     label: { type: String, default: 'Loading...' },
-    compact: Boolean
+    compact: Boolean,
+    showLabel: { type: Boolean, default: true }
   },
   data: () => ({ filterId: `goo-loader-${++loaderId}` })
 };

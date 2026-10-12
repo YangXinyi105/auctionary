@@ -2,7 +2,7 @@
   <main class="detail">
     <router-link class="back" to="/">← {{ $t('Back to auctions', '返回拍卖市场') }}</router-link>
 
-    <GooLoader v-if="loading" :label="$t('Loading auction...', '正在加载拍卖…')" />
+    <GooLoader v-if="loading" :show-label="false" :label="$t('Loading auction...', '正在加载拍卖…')" />
     <div v-else-if="error" class="notice" role="alert">
       <p>{{ error }}</p>
       <button type="button" @click="load">{{ $t('Try again', '重试') }}</button>
