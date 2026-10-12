@@ -4,6 +4,7 @@
   "description": "The Auctionary API for the 26/27 Full Stack Web Development assignment",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "wipe": "mocha ./tests/database.refresh.js --reporter spec --log-level=warn --timeout 10000",
     "test": "mocha ./tests/test.*.js --reporter spec --log-level=warn --timeout 10000",
     "dev": "nodemon server.js"
