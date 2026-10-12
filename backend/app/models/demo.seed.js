@@ -24,13 +24,20 @@ const items = [
 
 async function seed() {
     if (process.env.AUCTION_DB === ':memory:') return;
-    if ((await get('SELECT COUNT(*) count FROM users')).count || (await get('SELECT COUNT(*) count FROM items')).count) return;
+    const hasData = (await get('SELECT COUNT(*) count FROM users')).count || (await get('SELECT COUNT(*) count FROM items')).count;
+    if (hasData) {
+        if (!await get('SELECT user_id FROM users WHERE email=?', ['admin@auctionary.example'])) {
+            await run('INSERT INTO users(first_name,last_name,email,password,is_admin) VALUES(?,?,?,?,1)', ['Auctionary', 'Admin', 'admin@auctionary.example', await hash('Admin123!')]);
+        }
+        return;
+    }
     const now = Math.floor(Date.now() / 1000);
     await run('BEGIN IMMEDIATE');
     try {
         for (const [id, firstName, lastName, email, password] of users) {
             await run('INSERT INTO users(user_id,first_name,last_name,email,password,salt,session_token) VALUES(?,?,?,?,?,NULL,NULL)', [id, firstName, lastName, email, await hash(password)]);
         }
+        await run('INSERT INTO users(first_name,last_name,email,password,is_admin) VALUES(?,?,?,?,1)', ['Auctionary', 'Admin', 'admin@auctionary.example', await hash('Admin123!')]);
         for (const [index, item] of items.entries()) {
             const [id, name, description, price, creatorId, image, categories] = item;
             await run('INSERT INTO items(item_id,name,description,starting_bid,start_date,end_date,creator_id) VALUES(?,?,?,?,?,?,?)', [id, name, description, price, now - 86400, now + (index + 2) * 86400, creatorId]);

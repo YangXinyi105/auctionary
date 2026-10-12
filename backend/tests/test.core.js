@@ -68,6 +68,17 @@ describe('Core Auctionary flows (isolated database)', () => {
         assert.equal((await request('POST', `/question/${questionId}`, { answer_text: 'Yes' }, seller.session_token)).status, 200);
         assert.equal((await request('GET', `/item/${itemId}/question`)).data[0].answer_text, 'Yes');
     });
+    it('allows administrators to delete questions and mute or unmute users', async () => {
+        await request('POST', '/users', { first_name: 'Observer', last_name: 'Test', email: 'observer@example.com', password: 'Example123!' });
+        const observer = (await request('POST', '/login', { email: 'observer@example.com', password: 'Example123!' })).data;
+        await run('UPDATE users SET is_admin=1 WHERE user_id=?', [buyer.user_id]);
+        assert.equal((await request('PUT', `/admin/users/${observer.user_id}/mute`, { hours: 24 }, seller.session_token)).status, 403);
+        assert.equal((await request('PUT', `/admin/users/${observer.user_id}/mute`, { hours: 24 }, buyer.session_token)).status, 200);
+        assert.equal((await request('POST', `/item/${itemId}/question`, { question_text: 'Can I post?' }, observer.session_token)).status, 403);
+        assert.equal((await request('DELETE', `/question/${questionId}`, undefined, buyer.session_token)).status, 200);
+        assert.equal((await request('PUT', `/admin/users/${observer.user_id}/mute`, { hours: 0 }, buyer.session_token)).status, 200);
+        assert.equal((await request('POST', `/item/${itemId}/question`, { question_text: 'Can I post now?' }, observer.session_token)).status, 200);
+    });
     it('searches with pagination, account filters and private-field-free profiles', async () => {
         const result = await request('GET', '/search?q=LEGO&limit=1&offset=0');
         assert.equal(result.data.length, 1); assert.equal(result.total, '1');

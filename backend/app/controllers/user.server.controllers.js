@@ -129,7 +129,7 @@ const getCurrentUser = (req, res) => {
     userModel.findByToken(token, (err, user) => {
         if (err) return res.sendStatus(500);
         if (!user) return res.sendStatus(401);
-        res.json({ user_id: user.user_id, first_name: user.first_name, last_name: user.last_name, email: user.email });
+        res.json({ user_id: user.user_id, first_name: user.first_name, last_name: user.last_name, email: user.email, is_admin: !!user.is_admin, muted_until: user.muted_until || null });
     });
 };
 

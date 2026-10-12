@@ -111,7 +111,7 @@ const removeToken = (token, done)=>{
 };
 
 const findByToken = (token, done) => {
-    db.get('SELECT user_id,first_name,last_name,email FROM users WHERE session_token=?', [token], done);
+    db.get('SELECT user_id,first_name,last_name,email,is_admin,muted_until FROM users WHERE session_token=?', [token], done);
 };
 
 const updatePassword = (user_id, password, done) => {

@@ -9,6 +9,13 @@ const auth = async (req, res) => {
     if (!user) { fail(res, 401, 'Please sign in again.'); return null; }
     return user.user_id;
 };
+const admin = async (req, res) => {
+    const token = req.get('X-Authorization');
+    const user = token && await get('SELECT user_id,is_admin FROM users WHERE session_token=?', [token]);
+    if (!user) { fail(res, 401, 'Please sign in again.'); return null; }
+    if (!user.is_admin) { fail(res, 403, 'Administrator access is required.'); return null; }
+    return user;
+};
 const validate = (res, schema, body) => {
     const { error, value } = schema.validate(body, { convert: false });
     if (error) { fail(res, 400, error.details[0].message); return null; }
@@ -101,10 +108,15 @@ module.exports = app => {
     }));
     app.get('/item/:id/question', wrap(async (req, res) => {
         if (!await get('SELECT item_id FROM items WHERE item_id=?', [req.params.id])) return res.sendStatus(404);
-        res.json(await all('SELECT question_id,question question_text,answer answer_text FROM questions WHERE item_id=? ORDER BY question_id DESC', [req.params.id]));
+        res.json(await all(`SELECT q.question_id,q.question question_text,q.answer answer_text,q.asked_by,
+            u.first_name,u.last_name,u.muted_until
+            FROM questions q JOIN users u ON u.user_id=q.asked_by
+            WHERE q.item_id=? ORDER BY q.question_id DESC`, [req.params.id]));
     }));
     app.post('/item/:id/question', wrap(async (req, res) => {
         const user = await auth(req, res); if (!user) return;
+        const account = await get('SELECT muted_until FROM users WHERE user_id=?', [user]);
+        if (account.muted_until && account.muted_until > Math.floor(Date.now() / 1000)) return fail(res, 403, 'Your account is muted and cannot post questions yet.');
         const value = validate(res, Joi.object({ question_text: Joi.string().trim().required() }), req.body); if (!value) return;
         if (offensive(value.question_text)) return fail(res, 400, 'Please remove offensive language from the question.');
         const item = await get('SELECT creator_id FROM items WHERE item_id=?', [req.params.id]);
@@ -122,5 +134,21 @@ module.exports = app => {
         if (question.creator_id !== user) return fail(res, 403, 'Only the seller can answer this question.');
         await run('UPDATE questions SET answer=? WHERE question_id=?', [value.answer_text, req.params.id]);
         res.sendStatus(200);
+    }));
+    app.delete('/question/:id', wrap(async (req, res) => {
+        if (!await admin(req, res)) return;
+        const result = await run('DELETE FROM questions WHERE question_id=?', [req.params.id]);
+        if (!result.changes) return res.sendStatus(404);
+        res.sendStatus(200);
+    }));
+    app.put('/admin/users/:id/mute', wrap(async (req, res) => {
+        const moderator = await admin(req, res); if (!moderator) return;
+        const value = validate(res, Joi.object({ hours: Joi.number().integer().min(0).max(720).required() }), req.body); if (!value) return;
+        const target = await get('SELECT user_id,is_admin FROM users WHERE user_id=?', [req.params.id]);
+        if (!target) return res.sendStatus(404);
+        if (target.is_admin) return fail(res, 403, 'Administrators cannot mute other administrators.');
+        const mutedUntil = value.hours === 0 ? null : Math.floor(Date.now() / 1000) + value.hours * 3600;
+        await run('UPDATE users SET muted_until=? WHERE user_id=?', [mutedUntil, target.user_id]);
+        res.json({ user_id: target.user_id, muted_until: mutedUntil });
     }));
 };

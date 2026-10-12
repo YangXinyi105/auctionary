@@ -51,6 +51,8 @@ All demo accounts use the password `Pokemon123!`.
 
 The public deployment also includes `xinyi.demo@example.com` with password `Auctionary123!`. It replaces the private local account while keeping its demo listing and collection progress.
 
+Administrator demo account: `admin@auctionary.example` with password `Admin123!`. Administrators can delete questions and mute or unmute question authors.
+
 ## Verification
 
 ```powershell
