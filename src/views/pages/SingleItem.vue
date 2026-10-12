@@ -87,8 +87,7 @@
 import axios from 'axios';
 import AuctionQuestions from '../../components/AuctionQuestions.vue';
 import { getItem } from '../../services/core.service';
-
-const API = 'http://localhost:3334';
+import { API } from '../../services/api';
 
 export default {
   name: 'SingleItem',

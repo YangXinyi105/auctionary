@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 
 
 import Home from '../views/pages/Home.vue'
@@ -10,7 +10,7 @@ import UserProfile from '../views/pages/UserProfile.vue'
 
 const router = createRouter({
 
-    history: createWebHistory(),
+    history: createWebHashHistory(),
 
     scrollBehavior(to) {
         if (to.hash) return { el: to.hash, top: 88 }

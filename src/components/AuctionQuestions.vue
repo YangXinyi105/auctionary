@@ -25,7 +25,7 @@
 </template>
 <script>
 import axios from 'axios';
-const API = 'http://localhost:3334';
+import { API } from '../services/api';
 export default {
   props: { itemId: Number, isSeller: Boolean },
   data: () => ({ questions: [], answers: {}, questionText: '', loading: true, error: '', message: '', busy: false, signedIn: !!localStorage.getItem('session_token') }),

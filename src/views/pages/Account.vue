@@ -103,8 +103,7 @@ import SetCollection from '../../components/SetCollection.vue';
 import AccountAuctions from '../../components/AccountAuctions.vue';
 import GooLoader from '../../components/GooLoader.vue';
 import { uploadAvatarFile } from '../../services/avatar';
-
-const API = 'http://localhost:3334';
+import { API } from '../../services/api';
 
 export default {
   name: 'Account',

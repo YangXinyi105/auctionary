@@ -174,8 +174,7 @@ import axios from 'axios';
 import ItemCard from '../../components/ItemCard.vue';
 import GooLoader from '../../components/GooLoader.vue';
 import { searchItems } from '../../services/core.service';
-
-const API = 'http://localhost:3334';
+import { API } from '../../services/api';
 
 export default {
   name: 'Home',

@@ -16,6 +16,7 @@
 </template>
 <script>
 import axios from 'axios';
+import { apiUrl } from '../services/api';
 export default {
   data: () => ({ tabs: [{ value: 'OPEN', label: 'Selling', zh: '正在出售' }, { value: 'BID', label: 'My bids', zh: '我的竞价' }, { value: 'ARCHIVE', label: 'Ended listings', zh: '已结束' }], status: 'OPEN', items: [], offset: 0, hasMore: false, loading: false, error: '', sequence: 0 }),
   mounted() { this.load(); },
@@ -23,7 +24,7 @@ export default {
     async load() {
       const sequence = ++this.sequence; this.loading = true; this.error = '';
       try {
-        const { data } = await axios.get('http://localhost:3334/search', { params: { status: this.status, offset: this.offset, limit: 11 }, headers: { 'X-Authorization': localStorage.getItem('session_token') }, timeout: 10000 });
+        const { data } = await axios.get(apiUrl('/search'), { params: { status: this.status, offset: this.offset, limit: 11 }, headers: { 'X-Authorization': localStorage.getItem('session_token') }, timeout: 10000 });
         if (sequence !== this.sequence) return;
         this.items = data.slice(0, 10); this.hasMore = data.length > 10;
       } catch { if (sequence === this.sequence) this.error = this.$t('Could not load your auctions. Please retry.', '无法加载你的拍卖，请重试。'); }

@@ -1,10 +1,10 @@
 import axios from "axios";
-
+import { apiUrl } from './api';
 
 const searchItems = (params = {}) => {
 
     return axios.get(
-        "http://localhost:3334/search", { params, timeout: 10000 }
+        apiUrl('/search'), { params, timeout: 10000 }
     )
     .then(response => {
 
@@ -18,7 +18,7 @@ const searchItems = (params = {}) => {
 const getItem = (id) => {
 
     return axios.get(
-        `http://localhost:3334/item/${id}`
+        apiUrl(`/item/${id}`)
     )
     .then(response => {
 

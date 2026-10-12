@@ -16,6 +16,7 @@
 <script>
 import axios from 'axios';
 import ItemCard from '../../components/ItemCard.vue';
+import { apiUrl } from '../../services/api';
 export default {
   components: { ItemCard },
   data: () => ({ loading: true, error: '', profile: {}, groups: [{ key: 'selling', title: 'Selling', zh: '正在出售' }, { key: 'bidding_on', title: 'Bidding on', zh: '参与竞价' }, { key: 'auctions_ended', title: 'Ended auctions', zh: '已结束拍卖' }] }),
@@ -23,7 +24,7 @@ export default {
   watch: { '$route.params.id'() { this.load(); } },
   methods: { async load() {
     this.loading = true; this.error = '';
-    try { this.profile = (await axios.get(`http://localhost:3334/users/${this.$route.params.id}`, { timeout: 10000 })).data; }
+    try { this.profile = (await axios.get(apiUrl(`/users/${this.$route.params.id}`), { timeout: 10000 })).data; }
     catch (error) { this.error = error.response?.status === 404 ? this.$t('User not found.', '未找到该用户。') : this.$t('Could not load profile.', '无法加载个人主页。'); }
     finally { this.loading = false; }
   } }

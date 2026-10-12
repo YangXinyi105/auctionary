@@ -27,7 +27,7 @@
 
 <script>
 import axios from 'axios';
-const API = 'http://localhost:3334';
+import { API } from '../services/api';
 export default {
   data: () => ({ entries: [], setNames: [], draft: null, loading: true, loadFailed: false, busy: false, error: '', message: '', zh: localStorage.getItem('lang') === 'zh' }),
   mounted() { this.load(); window.addEventListener('language-change', this.language); },

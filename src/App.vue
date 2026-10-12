@@ -57,11 +57,12 @@
 <script>
 import axios from 'axios';
 import { uploadAvatarFile, saveAvatar } from './services/avatar';
+import { apiUrl } from './services/api';
 
 const brickAvatars = [
-  'http://localhost:3334/uploads/lego-10698.jpg',
-  'http://localhost:3334/uploads/lego-60367.jpg',
-  'http://localhost:3334/uploads/lego-10303.jpg'
+  apiUrl('/uploads/lego-10698.jpg'),
+  apiUrl('/uploads/lego-60367.jpg'),
+  apiUrl('/uploads/lego-10303.jpg')
 ];
 
 function initialAvatar() {
@@ -118,7 +119,7 @@ export default {
     },
     async logout() {
       try {
-        await axios.post('http://localhost:3334/logout', {}, { headers: { 'X-Authorization': localStorage.getItem('session_token') }, timeout: 10000 });
+        await axios.post(apiUrl('/logout'), {}, { headers: { 'X-Authorization': localStorage.getItem('session_token') }, timeout: 10000 });
       } catch (error) {
         if (error.response?.status !== 401) { this.avatarError = this.$t('Sign out failed. Please retry.', '退出失败，请重试。'); return; }
       }

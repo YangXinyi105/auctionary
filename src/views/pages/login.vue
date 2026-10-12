@@ -45,6 +45,7 @@
 
 <script>
 import axios from 'axios';
+import { apiUrl } from '../../services/api';
 
 export default {
   data: () => ({
@@ -64,7 +65,7 @@ export default {
     async submit() {
       this.message = '';
       try {
-        const url = this.register ? 'http://localhost:3334/users' : 'http://localhost:3334/login';
+        const url = apiUrl(this.register ? '/users' : '/login');
         const response = await axios.post(url, this.register ? this.form : { email: this.form.email, password: this.form.password });
         if (this.register) {
           this.message = this.$t('Account created. You can now sign in.', '账户已创建，现在可以登录。');
