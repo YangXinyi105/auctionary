@@ -3,10 +3,10 @@ const { offensive } = require('../models/extensions');
 const { get, all, run, selectItems } = require('../models/auction.store');
 const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res)).catch(next);
 const fail = (res, status, message) => res.status(status).json({ error_message: message });
-const auth = async (req, res) => {
+const auth = async (req, res, failureStatus = 401) => {
     const token = req.get('X-Authorization');
     const user = token && await get('SELECT user_id FROM users WHERE session_token=?', [token]);
-    if (!user) { fail(res, 401, 'Please sign in again.'); return null; }
+    if (!user) { fail(res, failureStatus, 'Please sign in again.'); return null; }
     return user.user_id;
 };
 const admin = async (req, res) => {
@@ -16,8 +16,8 @@ const admin = async (req, res) => {
     if (!user.is_admin) { fail(res, 403, 'Administrator access is required.'); return null; }
     return user;
 };
-const validate = (res, schema, body) => {
-    const { error, value } = schema.validate(body, { convert: false });
+const validate = (res, schema, body, convert = false) => {
+    const { error, value } = schema.validate(body, { convert });
     if (error) { fail(res, 400, error.details[0].message); return null; }
     return value;
 };
@@ -52,7 +52,7 @@ module.exports = app => {
             where += ' AND EXISTS(SELECT 1 FROM item_categories ic WHERE ic.item_id=i.item_id AND ic.category_id=?)'; args.push(Number(category_id));
         }
         if (status) {
-            const user = await auth(req, res); if (!user) return;
+            const user = await auth(req, res, 400); if (!user) return;
             if (status === 'BID') { where += ' AND EXISTS(SELECT 1 FROM bids b WHERE b.item_id=i.item_id AND b.user_id=?)'; args.push(user); }
             else { where += ` AND i.creator_id=? AND i.end_date${status === 'OPEN' ? '>' : '<='}?`; args.push(user, Math.floor(Date.now() / 1000)); }
         }
@@ -63,7 +63,7 @@ module.exports = app => {
     }));
     app.post(['/item', '/items'], wrap(async (req, res) => {
         const user = await auth(req, res); if (!user) return;
-        const value = validate(res, itemSchema, req.body); if (!value) return;
+        const value = validate(res, itemSchema, req.body, true); if (!value) return;
         if (offensive(value.name) || offensive(value.description) || offensive(value.custom_category)) return fail(res, 400, 'Please remove offensive language from the listing.');
         for (const id of value.category_ids || []) if (!await get('SELECT category_id FROM categories WHERE category_id=?', [id])) return fail(res, 400, 'Unknown category.');
         const now = Math.floor(Date.now() / 1000);

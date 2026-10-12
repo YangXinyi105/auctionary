@@ -28,8 +28,13 @@
             v-model="form.password"
             type="password"
             :autocomplete="register ? 'new-password' : 'current-password'"
+            :minlength="register ? 8 : null"
+            :maxlength="register ? 32 : null"
+            :pattern="register ? '(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,32}' : null"
+            :title="register ? $t('Use 8–32 characters with uppercase, lowercase, a number and a symbol.', '使用 8–32 个字符，并包含大小写字母、数字和特殊符号。') : ''"
             required
           />
+          <small v-if="register">{{ $t('8–32 characters with uppercase, lowercase, a number and a symbol.', '8–32 个字符，包含大小写字母、数字和特殊符号。') }}</small>
         </label>
 
         <button class="submit" type="submit">{{ register ? $t('Create account', '创建账户') : $t('Sign in', '登录') }}</button>

@@ -8,7 +8,14 @@ const createUser = (req, res) => {
         first_name: Joi.string().trim().min(1).required(),
         last_name: Joi.string().trim().min(1).required(),
         email: Joi.string().email().required(),
-        password: Joi.string().required()
+        password: Joi.string()
+            .min(8)
+            .max(32)
+            .pattern(/[a-z]/)
+            .pattern(/[A-Z]/)
+            .pattern(/[0-9]/)
+            .pattern(/[^A-Za-z0-9]/)
+            .required()
     });
 
 
@@ -65,7 +72,7 @@ const login = (req, res) => {
         try { valid = !!user && await require('../models/passwords').verify(password, user.password); }
         catch { return res.sendStatus(500); }
         if (!valid) {
-            return res.sendStatus(400);
+            return res.status(400).json({ error_message: 'Email or password is incorrect.' });
         }
 
 

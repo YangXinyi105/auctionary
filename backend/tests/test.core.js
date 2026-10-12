@@ -90,7 +90,7 @@ describe('Core Auctionary flows (isolated database)', () => {
         assert.equal((await request('GET', '/search?status=BID', undefined, buyer.session_token)).data.length, 1);
         assert.equal((await request('GET', '/search?limit=101')).status, 400);
         assert.equal((await request('GET', '/search?status=UNKNOWN')).status, 400);
-        assert.equal((await request('GET', '/search?status=BID')).status, 401);
+        assert.equal((await request('GET', '/search?status=BID')).status, 400);
         const user = (await request('GET', `/users/${seller.user_id}`)).data;
         assert.equal(user.selling.length, 3); assert.equal(user.password, undefined); assert.equal(user.email, undefined);
     });
