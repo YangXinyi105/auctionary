@@ -26,6 +26,7 @@ backend/*.db-*
 # Keep bundled demo assets, but never publish user-uploaded images.
 backend/uploads/*
 !backend/uploads/lego-*.jpg
+!backend/uploads/lego-*.png
 
 # Editor directories and files
 .vscode/*

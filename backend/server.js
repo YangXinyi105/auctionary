@@ -17,7 +17,10 @@ app.use(express.static(path.join(__dirname, '..', 'dist')));
 const HTTP_PORT = Number(process.env.PORT || 3334);
 
 // Start server
-const ready = require('./app/models/auction.store').migrate().then(() => require('./app/models/passwords').migrate()).then(() => require('./app/models/extensions').migrate());
+const ready = require('./app/models/auction.store').migrate()
+    .then(() => require('./app/models/passwords').migrate())
+    .then(() => require('./app/models/extensions').migrate())
+    .then(() => require('./app/models/demo.seed').seed());
 app.use((req, res, next) => ready.then(() => next()).catch(next));
 
 // Logging

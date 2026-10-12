@@ -49,6 +49,8 @@ All demo accounts use the password `Pokemon123!`.
 - `misty.test@example.com`
 - `brock.test@example.com`
 
+The public deployment also includes `xinyi.demo@example.com` with password `Auctionary123!`. It replaces the private local account while keeping its demo listing and collection progress.
+
 ## Verification
 
 ```powershell
