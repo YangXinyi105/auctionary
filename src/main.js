@@ -2,7 +2,7 @@ import { createApp, reactive } from 'vue'
 import App from './App.vue'
 
 import router from './router'
-import './assets/pixel-theme.css'
+import './assets/lego-theme.css'
 
 const locale = reactive({ zh: localStorage.getItem('lang') === 'zh' })
 window.addEventListener('language-change', () => { locale.zh = localStorage.getItem('lang') === 'zh' })

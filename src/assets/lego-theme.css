@@ -1,0 +1,255 @@
+/* LEGO theme: primary-colour bricks, studs and 3D bottom edges.
+   Loaded after App.vue, so these tokens and #app rules override the base styles. */
+:root {
+  --page: #f4f1e8;
+  --surface: #ffffff;
+  --surface-muted: #ece8da;
+  --ink: #1b1b1b;
+  --muted: #5b5b55;
+  --line: #d9d3bf;
+  --accent: #d01012;
+  --accent-hover: #b30d0f;
+  --accent-soft: #fde4e4;
+  --danger: #b30d0f;
+  --lego-red: #d01012;
+  --lego-red-dark: #8c0a0c;
+  --lego-yellow: #ffd500;
+  --lego-yellow-dark: #c9a500;
+  --lego-blue: #0055bf;
+  --lego-blue-dark: #003a82;
+  --lego-green: #237841;
+  --lego-green-dark: #17512c;
+  --radius: 10px;
+  --radius-control: 8px;
+  --stud: radial-gradient(circle at 50% 50%, rgba(255,255,255,.55) 0 5px, rgba(0,0,0,.14) 5.5px 7px, transparent 7.5px);
+  font-family: "Nunito", "Trebuchet MS", "Microsoft YaHei", Arial, sans-serif;
+  color: var(--ink);
+}
+#app .app {
+  background: radial-gradient(circle at 16px 16px, rgba(0,0,0,.035) 0 5px, transparent 5.5px) 0 0 / 32px 32px, var(--page);
+}
+#app main h1, #app main h2, #app .logo, #app .site-footer strong {
+  font-family: "Arial Rounded MT Bold", "Trebuchet MS", "Microsoft YaHei", Arial, sans-serif;
+  font-weight: 900;
+  letter-spacing: -.01em;
+}
+
+/* Header: red baseplate with a row of studs underneath */
+#app .site-header {
+  background: var(--lego-red);
+  border-bottom: 4px solid var(--lego-red-dark);
+  backdrop-filter: none;
+  box-shadow: none;
+  color: #fff;
+}
+#app .site-header::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 100%;
+  height: 10px;
+  background: var(--stud) 0 0 / 28px 10px repeat-x;
+  filter: invert(1) opacity(.18);
+  pointer-events: none;
+}
+#app .logo { color: #fff; font-size: 1.5rem; }
+#app .logo > b {
+  background: var(--lego-yellow);
+  border: 0;
+  border-radius: 4px;
+  box-shadow: 0 3px 0 var(--lego-yellow-dark);
+}
+#app .logo > b::before, #app .logo > b::after { background: var(--lego-yellow-dark); border-radius: 50%; }
+#app .site-header nav { color: rgba(255,255,255,.85); }
+#app .site-header nav a:hover, #app .site-header nav a.router-link-exact-active { color: #fff; border-bottom-color: var(--lego-yellow); }
+#app .lang { color: #fff; }
+#app .lang:hover { background: rgba(255,255,255,.18); color: #fff; }
+#app .signin { background: var(--lego-yellow); color: var(--ink); box-shadow: 0 4px 0 var(--lego-yellow-dark); font-weight: 800; }
+#app .signin:hover { background: #ffe14d; }
+#app .avatar-button { color: #fff; }
+#app .avatar-button img { border: 2px solid var(--lego-yellow); border-radius: 8px; }
+#app .menu-toggle { color: #fff; }
+#app .menu-toggle:hover { background: rgba(255,255,255,.18); color: #fff; }
+#app .profile-menu { border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: 0 5px 0 var(--ink); }
+#app .profile-menu button, #app .profile-menu .upload { border-radius: 6px; font-weight: 700; }
+#app .profile-menu button:hover, #app .profile-menu .upload:hover { background: var(--lego-yellow); }
+
+/* Hero: a yellow 2x4 brick with studs along the top edge */
+#app .intro {
+  margin-top: 44px;
+  padding: 52px 48px 44px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--lego-yellow);
+  box-shadow: 0 10px 0 var(--lego-yellow-dark), 0 22px 30px rgba(0,0,0,.14);
+  align-items: center;
+  overflow: visible;
+}
+#app .intro::before {
+  content: "";
+  position: absolute;
+  left: 36px; right: 36px; top: -14px;
+  height: 14px;
+  background: var(--stud) 0 0 / 44px 14px repeat-x;
+  background-color: transparent;
+  border-radius: 8px 8px 0 0;
+  filter: none;
+}
+#app .intro::after { display: none; }
+#app .intro h1 { font-size: clamp(2.6rem, 5vw, 4.6rem); line-height: 1.02; }
+#app .kicker {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: var(--lego-blue);
+  color: #fff;
+  font-size: .82rem;
+  font-weight: 800;
+  letter-spacing: .03em;
+}
+#app .intro-copy > p:not(.kicker) { color: #3b3400; font-weight: 600; }
+#app .intro-meta {
+  padding: 24px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--lego-blue);
+  color: #fff;
+  box-shadow: 0 7px 0 var(--lego-blue-dark);
+  backdrop-filter: none;
+}
+#app .intro-meta strong { font-size: 4rem; color: var(--lego-yellow); }
+#app .intro-meta small { color: rgba(255,255,255,.82); }
+
+/* Buttons: chunky coloured bricks that press down */
+#app .primary-link, #app .primary-button, #app .publish, #app .submit,
+#app .secondary-button, #app .collection button, #app .draft-button,
+#app .choose-file, #app .change-photo {
+  border: 0;
+  border-radius: var(--radius-control);
+  font-weight: 800;
+  transition: transform 90ms ease, box-shadow 90ms ease, background-color 120ms ease;
+}
+#app .primary-link, #app .primary-button, #app .publish, #app .submit {
+  background: var(--lego-red);
+  color: #fff;
+  box-shadow: 0 5px 0 var(--lego-red-dark);
+}
+#app .primary-link:hover, #app .primary-button:hover, #app .publish:hover, #app .submit:hover { background: var(--accent-hover); }
+#app .secondary-button, #app .draft-button, #app .choose-file, #app .change-photo {
+  background: var(--lego-blue);
+  color: #fff;
+  box-shadow: 0 5px 0 var(--lego-blue-dark);
+}
+#app .pagination button {
+  border: 0;
+  background: var(--lego-blue);
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 4px 0 var(--lego-blue-dark);
+}
+#app .pagination button:not(:disabled):hover { box-shadow: 0 4px 0 var(--lego-blue-dark); background: #0a66d6; }
+#app .pagination button:disabled { background: #b9b6a8; box-shadow: 0 4px 0 #8f8c80; opacity: 1; }
+#app .primary-link:active, #app .primary-button:active, #app .publish:active, #app .submit:active,
+#app .secondary-button:active, #app .draft-button:active, #app .pagination button:not(:disabled):active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 rgba(0,0,0,.35);
+}
+
+/* Section headings get a coloured brick bar */
+#app .section-heading h2 { position: relative; padding-top: 18px; }
+#app .section-heading h2::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 84px; height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--lego-red) 0 25%, var(--lego-yellow) 25% 50%, var(--lego-blue) 50% 75%, var(--lego-green) 75%);
+}
+
+/* Auction cards: white bricks with studs on top */
+#app .lot { padding: 18px 12px 12px; position: relative; border-radius: var(--radius); background: var(--surface); box-shadow: 0 5px 0 #cfc9b4; transition: transform 120ms ease, box-shadow 120ms ease; }
+#app .lot::before {
+  content: "";
+  position: absolute;
+  left: 14px; right: 14px; top: -6px;
+  height: 8px;
+  background: radial-gradient(circle at 50% 100%, #fff 0 4px, transparent 4.5px) 0 0 / 22px 8px repeat-x;
+  filter: drop-shadow(0 -1px 0 #cfc9b4);
+}
+#app .lot:hover { transform: translateY(-4px); box-shadow: 0 9px 0 var(--lego-yellow-dark); }
+#app .lot:active { transform: translateY(2px); box-shadow: 0 2px 0 #cfc9b4; }
+#app .art { aspect-ratio: 1; border: 0; border-radius: 8px; box-shadow: none; background: var(--surface-muted); }
+#app .lot:hover .art { transform: none; border-color: transparent; box-shadow: none; }
+#app .caption { padding: 12px 2px 0; }
+#app .caption strong {
+  font-family: inherit;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: var(--lego-yellow);
+  color: var(--ink);
+  font-size: .95rem;
+  font-weight: 900;
+}
+
+/* Forms and panels */
+#app input:not([type=file]), #app select, #app textarea {
+  border: 2px solid #b8b29c;
+  border-radius: var(--radius-control);
+  background: #fff;
+  box-shadow: none;
+}
+#app input:not([type=file]):focus, #app select:focus, #app textarea:focus { border-color: var(--lego-blue); }
+#app .studio, #app .panel {
+  border: 0;
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 8px 0 #cfc9b4;
+}
+#app .dropzone { border: 3px dashed var(--lego-blue); border-radius: 12px; background: #eaf2fc; }
+#app .upload-mark { border: 0; border-radius: 8px; background: var(--lego-yellow); box-shadow: 0 4px 0 var(--lego-yellow-dark); font-family: inherit; font-weight: 900; }
+#app .password-panel { border-left: 6px solid var(--lego-red); }
+#app progress { height: 18px; border: 0; border-radius: 9px; background: var(--surface-muted); overflow: hidden; }
+#app progress::-webkit-progress-bar { background: var(--surface-muted); }
+#app progress::-webkit-progress-value { background: var(--lego-green); border-radius: 9px; }
+#app progress::-moz-progress-bar { background: var(--lego-green); }
+#app .entry-heading strong { font-family: inherit; font-weight: 900; }
+#app .drafts { border-top: 4px solid var(--lego-yellow); }
+
+/* Footer: green baseplate */
+#app .site-footer {
+  width: 100%;
+  margin-top: 80px;
+  padding: 26px max(24px, calc((100vw - 1344px) / 2)) 32px;
+  border-top: 6px solid var(--lego-green-dark);
+  background: var(--lego-green);
+  color: rgba(255,255,255,.88);
+}
+#app .site-footer strong { color: #fff; font-size: 1.3rem; }
+
+@media (max-width: 760px) {
+  /* Mobile dropdown panel needs its own red background and stacking above the stud strip */
+  #app .site-header nav {
+    z-index: 1;
+    background: var(--lego-red);
+    border-top: 4px solid var(--lego-red-dark);
+  }
+  #app .site-header nav a { color: #fff; }
+  #app .site-header nav a:hover,
+  #app .site-header nav a.router-link-exact-active {
+    color: #fff;
+    border-bottom-color: transparent;
+    background: rgba(255,255,255,.18);
+  }
+
+  #app .intro { margin-top: 36px; padding: 32px 24px 28px; grid-template-columns: 1fr; gap: 24px; }
+  #app .intro::before { left: 20px; right: 20px; }
+  #app .intro-meta { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; align-items: center; padding: 16px; }
+  #app .intro-meta strong { grid-row: span 2; font-size: 3rem; }
+  #app .intro-meta small { margin-top: 0; max-width: none; }
+  #app .intro h1 { font-size: clamp(2.3rem, 9vw, 3.4rem); }
+  #app .logo { font-size: 1.25rem; }
+  #app .caption { flex-wrap: wrap; gap: 6px; }
+  #app .site-footer { padding-inline: 18px; gap: 16px; flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #app .lot, #app .lot:hover, #app button:active, #app .primary-link:active { transform: none; }
+}

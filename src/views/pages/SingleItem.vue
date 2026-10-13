@@ -21,17 +21,21 @@
         </div>
 
         <h1>{{ item.name }}</h1>
-        <p class="description">{{ item.description || 'No description was provided for this set.' }}</p>
+        <p class="description">{{ item.description || $t('No description was provided for this set.', '此套装没有提供描述。') }}</p>
         <div v-if="item.categories?.length" class="category-list" aria-label="LEGO themes">
           <span v-for="category in item.categories" :key="category.category_id">{{ category.name }}</span>
         </div>
         <p>{{ $t('Seller:', '卖家：') }} <router-link :to="`/users/${item.creator_id}`">{{ item.first_name }} {{ item.last_name }}</router-link></p>
-        <p v-if="isEnded" role="status">{{ item.current_bid_holder ? `Winning bidder: ${item.current_bid_holder.first_name} ${item.current_bid_holder.last_name} · £${currentBid}` : 'This auction ended without bids.' }}</p>
+        <p v-if="isEnded" role="status">
+          {{ item.current_bid_holder
+            ? $t(`Winning bidder: ${item.current_bid_holder.first_name} ${item.current_bid_holder.last_name} · £${currentBid}`, `中标者：${item.current_bid_holder.first_name} ${item.current_bid_holder.last_name} · £${currentBid}`)
+            : $t('This auction ended without bids.', '此拍卖无人出价。') }}
+        </p>
 
         <div class="current">
           <span>{{ $t('Current highest bid', '当前最高出价') }}</span>
           <strong>£{{ currentBid }}</strong>
-          <small>{{ bids.length }} {{ bids.length === 1 ? 'bid' : 'bids' }}</small>
+          <small>{{ $t(`${bids.length} ${bids.length === 1 ? 'bid' : 'bids'}`, `${bids.length} 次出价`) }}</small>
         </div>
 
         <div class="countdown">
@@ -66,12 +70,12 @@
 
         <section class="history" aria-labelledby="history-heading">
           <h2 id="history-heading">{{ $t('Bid history', '竞价记录') }} <span>{{ bids.length }}</span></h2>
-          <p v-if="bidHistoryError" role="alert">{{ bidHistoryError }} <button @click="load">Retry</button></p>
+          <p v-if="bidHistoryError" role="alert">{{ bidHistoryError }} <button @click="load">{{ $t('Retry', '重试') }}</button></p>
           <div v-else-if="!bids.length" class="empty">{{ $t('No bids yet. Be the first to bid.', '暂无出价，成为第一个竞拍者。') }}</div>
           <div v-for="(bid, index) in bids" :key="`${bid.timestamp}-${index}`" class="bid-row">
             <span class="bid-avatar" aria-hidden="true">{{ String(bid.first_name || 'C').charAt(0).toUpperCase() }}</span>
             <span>
-              {{ bid.first_name || 'Collector' }} {{ bid.last_name || '' }}
+              {{ bid.first_name || $t('Collector', '收藏者') }} {{ bid.last_name || '' }}
               <small>{{ formatDate(bid.timestamp) }}</small>
             </span>
             <b>£{{ bid.amount }}</b>

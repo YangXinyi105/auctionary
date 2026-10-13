@@ -6,12 +6,24 @@
       <span>auctionary</span>
       </router-link>
 
-      <nav :aria-label="zh ? '主导航' : 'Main navigation'">
+      <nav id="main-nav" :class="{ open: navOpen }" :aria-label="zh ? '主导航' : 'Main navigation'" @click="navOpen = false">
         <router-link to="/">{{ zh ? '拍卖市场' : 'Marketplace' }}</router-link>
-        <router-link to="/#sell">{{ zh ? '发布套装' : 'Sell a set' }}</router-link>
+        <router-link to="/sell">{{ zh ? '发布套装' : 'Sell a set' }}</router-link>
       </nav>
 
       <div class="header-actions">
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-controls="main-nav"
+          :aria-expanded="navOpen"
+          :aria-label="zh ? '打开导航' : 'Open navigation'"
+          @click="navOpen = !navOpen"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </button>
         <button class="lang" type="button" @click="toggle">{{ zh ? 'EN' : '中文' }}</button>
         <router-link v-if="!loggedIn" class="signin" to="/login">
           {{ zh ? '登录 / 注册' : 'Sign in' }}
@@ -77,8 +89,12 @@ export default {
     loggedIn: Boolean(localStorage.getItem('session_token')),
     avatar: initialAvatar(),
     avatarError: '',
-    menu: false
+    menu: false,
+    navOpen: false
   }),
+  watch: {
+    $route() { this.navOpen = false; }
+  },
   mounted() {
     window.addEventListener('auth-change', this.refresh);
     window.addEventListener('session-expired', this.refresh);
@@ -438,6 +454,32 @@ select:focus-visible {
   letter-spacing: -0.025em;
 }
 
+/* Hamburger toggle: only shown at the mobile breakpoint */
+.nav-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  padding: 9px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: inherit;
+  flex-direction: column;
+  justify-content: space-between;
+  order: -1;
+}
+
+.nav-toggle span {
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.nav-toggle:hover {
+  background: rgba(255, 255, 255, .18);
+}
+
 @media (max-width: 760px) {
   .site-header {
     height: 66px;
@@ -445,8 +487,39 @@ select:focus-visible {
     gap: 12px;
   }
 
+  .nav-toggle {
+    display: flex;
+  }
+
+  /* Nav becomes a dropdown panel under the header instead of disappearing */
   .site-header nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
     display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 8px 10px 12px;
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, .22);
+  }
+
+  .site-header nav.open {
+    display: flex;
+  }
+
+  .site-header nav a {
+    padding: 13px 12px;
+    border-bottom: 0;
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+
+  .site-header nav a:hover,
+  .site-header nav a.router-link-exact-active {
+    border-bottom-color: transparent;
   }
 
   .header-actions {
