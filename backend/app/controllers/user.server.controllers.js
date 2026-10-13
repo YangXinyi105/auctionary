@@ -50,7 +50,7 @@ const createUser = (req, res) => {
 // 登录
 const login = (req, res) => {
 
-    const validation = Joi.object({ email: Joi.string().email().required(), password: Joi.string().required() }).validate(req.body);
+    const validation = Joi.object({ email: Joi.string().email({ tlds: { allow: false } }).required(), password: Joi.string().required() }).validate(req.body);
     if (validation.error) return res.status(400).json({ error_message: validation.error.details[0].message });
 
     const { email, password } = req.body;
