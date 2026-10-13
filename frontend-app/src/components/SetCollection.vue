@@ -2,22 +2,22 @@
   <section class="collection" aria-labelledby="collection-title">
     <header><div><p class="eyebrow">MY BRICKS</p><h2 id="collection-title">{{ t('套装收集进度', 'Set collection progress') }}</h2></div>
       <button type="button" :disabled="busy" @click="start()">{{ t('+ 添加套装', '+ Add set') }}</button></header>
-    <p class="hint">{{ t('记录每套乐高已收集的零件，离完整套装更近一步。', 'Track the pieces you own for each LEGO set.') }}</p>
+    <p class="hint">{{ t('按完整套装记录收藏进度，不按零件数量计算。', 'Track complete LEGO sets, not individual pieces.') }}</p>
     <GooLoader v-if="loading" compact :label="t('正在加载收集进度…', 'Loading collection progress...')" />
     <p v-if="error" class="error" role="alert">{{ error }} <button v-if="loadFailed" @click="load">{{ t('重试', 'Retry') }}</button></p>
     <p v-if="!loading && !loadFailed && !entries.length" class="empty">{{ t('还没有记录。添加你正在收集的第一套乐高。', 'No sets yet. Add the first set you are collecting.') }}</p>
     <article v-for="entry in entries" :key="entry.collection_id" class="entry">
       <div class="entry-heading"><h3>{{ entry.name }}</h3><strong>{{ percent(entry) }}%</strong></div>
       <progress :value="entry.collected" :max="entry.total" :aria-label="entry.name"></progress>
-      <div class="entry-footer"><span>{{ entry.collected.toLocaleString() }} / {{ entry.total.toLocaleString() }} {{ t('件', 'pieces') }} · {{ entry.collected === entry.total ? t('已集齐', 'Complete') : t(`还差 ${entry.total - entry.collected} 件`, `${entry.total - entry.collected} remaining`) }}</span>
+      <div class="entry-footer"><span>{{ entry.collected.toLocaleString() }} / {{ entry.total.toLocaleString() }} {{ t('套', 'sets') }} · {{ entry.collected === entry.total ? t('已集齐', 'Complete') : t(`还差 ${entry.total - entry.collected} 套`, `${entry.total - entry.collected} remaining`) }}</span>
         <button type="button" :disabled="busy" @click="start(entry)">{{ t('更新进度', 'Update') }}</button></div>
     </article>
     <form v-if="draft" @submit.prevent="save">
       <h3>{{ draft.collection_id ? t('更新套装', 'Update set') : t('添加套装', 'Add a set') }}</h3>
-      <label>{{ t('套装名称 / 编号', 'Set name / number') }}<input ref="nameInput" v-model.trim="draft.name" list="collection-set-names" required maxlength="120" :placeholder="t('例如：75375 千年隼', 'e.g. 75375 Millennium Falcon')" /></label>
+      <label>{{ t('系列或收藏范围', 'Theme or collection') }}<input ref="nameInput" v-model.trim="draft.name" list="collection-set-names" required maxlength="120" :placeholder="t('例如：星球大战系列', 'e.g. Star Wars collection')" /></label>
       <datalist id="collection-set-names"><option v-for="name in setNames" :key="name" :value="name" /></datalist>
-      <div class="counts"><label>{{ t('总零件数', 'Total pieces') }}<input v-model.number="draft.total" type="number" min="1" max="1000000" step="1" required /></label>
-      <label>{{ t('已收集零件数', 'Pieces collected') }}<input v-model.number="draft.collected" type="number" min="0" :max="draft.total || 0" step="1" required /></label></div>
+      <div class="counts"><label>{{ t('套装总数', 'Total sets') }}<input v-model.number="draft.total" type="number" min="1" max="1000000" step="1" required /></label>
+      <label>{{ t('已拥有套装数', 'Sets owned') }}<input v-model.number="draft.collected" type="number" min="0" :max="draft.total || 0" step="1" required /></label></div>
       <div class="actions"><button class="save" :disabled="busy">{{ busy ? t('保存中…', 'Saving…') : t('保存进度', 'Save progress') }}</button><button type="button" :disabled="busy" @click="draft = null">{{ t('取消', 'Cancel') }}</button>
         <button v-if="draft.collection_id" class="remove" type="button" :disabled="busy" @click="remove">{{ t('删除记录', 'Delete record') }}</button></div>
     </form>
@@ -51,7 +51,7 @@ export default {
       if (this.busy) return;
       const { name, total, collected } = this.draft;
       if (!name || !Number.isSafeInteger(total) || total < 1 || total > 1000000 || !Number.isSafeInteger(collected) || collected < 0 || collected > total) {
-        this.error = this.t('请填写名称和有效整数，已收集数量不能超过总数。', 'Enter a name and valid whole numbers. Collected pieces cannot exceed the total.'); return;
+        this.error = this.t('请填写名称和有效整数，已拥有套装数不能超过套装总数。', 'Enter a name and valid whole numbers. Owned sets cannot exceed the total sets.'); return;
       }
       this.busy = true; this.error = ''; this.message = '';
       try {

@@ -16,7 +16,7 @@ module.exports = function (app) {
         if (typeof name !== 'string' || !name.trim() || name.trim().length > 120 ||
             !Number.isSafeInteger(total) || total < 1 || total > 1000000 ||
             !Number.isSafeInteger(collected) || collected < 0 || collected > total) {
-            return res.status(400).json({ error_message: 'Invalid collection values' });
+            return res.status(400).json({ error_message: 'Invalid set collection values' });
         }
         next();
     };
