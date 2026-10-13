@@ -18,15 +18,15 @@ coverage
 !.env.example
 
 # Local SQLite data and backups can contain registered-user information.
-backend/*.sqlite
-backend/*.sqlite-*
-backend/*.db
-backend/*.db-*
+backend-server/*.sqlite
+backend-server/*.sqlite-*
+backend-server/*.db
+backend-server/*.db-*
 
 # Keep bundled demo assets, but never publish user-uploaded images.
-backend/uploads/*
-!backend/uploads/lego-*.jpg
-!backend/uploads/lego-*.png
+backend-server/uploads/*
+!backend-server/uploads/lego-*.jpg
+!backend-server/uploads/lego-*.png
 
 # Editor directories and files
 .vscode/*

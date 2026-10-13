@@ -11,7 +11,7 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(cors({ exposedHeaders: ['X-Total-Count'] }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(express.static(path.join(__dirname, '..', 'dist')));
+app.use(express.static(path.join(__dirname, '..', 'frontend-app', 'dist')));
 
 // Server port
 const HTTP_PORT = Number(process.env.PORT || 3334);

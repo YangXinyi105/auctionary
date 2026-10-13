@@ -1,26 +1,14 @@
 {
-  "name": "auctionary-frontend",
-  "version": "0.0.0",
+  "name": "auctionary",
+  "version": "1.0.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "start": "npm --prefix backend start",
-    "postinstall": "npm --prefix backend install && npm run build",
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "axios": "^1.20.0",
-    "vue": "^3.5.42",
-    "vue-router": "^5.3.1"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.8",
-    "vite": "^8.2.2",
-    "vite-plugin-vue-devtools": "^8.2.1"
+    "start": "npm --prefix backend-server start",
+    "build": "npm --prefix frontend-app run build",
+    "dev": "npm --prefix frontend-app run dev -- --host 127.0.0.1",
+    "postinstall": "npm --prefix backend-server install && npm --prefix frontend-app install && npm run build"
   },
   "engines": {
-    "node": "^22.18.0 || >=24.12.0"
+    "node": ">=22"
   }
 }
