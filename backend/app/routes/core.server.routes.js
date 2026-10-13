@@ -150,10 +150,13 @@ module.exports = app => {
         res.sendStatus(200);
     }));
     app.delete('/question/:id', wrap(async (req, res) => {
-        if (!await admin(req, res)) return;
+        const user = await auth(req, res); if (!user) return;
         const questionId = parseId(res, req.params.id, 'question'); if (questionId === null) return;
+        const question = await get('SELECT asked_by FROM questions WHERE question_id=?', [questionId]);
+        if (!question) return res.sendStatus(404);
+        const account = await get('SELECT is_admin FROM users WHERE user_id=?', [user]);
+        if (question.asked_by !== user && !account.is_admin) return fail(res, 403, 'You can only delete your own questions.');
         const result = await run('DELETE FROM questions WHERE question_id=?', [questionId]);
-        if (!result.changes) return res.sendStatus(404);
         res.sendStatus(200);
     }));
     app.put('/admin/users/:id/mute', wrap(async (req, res) => {

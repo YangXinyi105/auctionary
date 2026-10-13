@@ -70,6 +70,12 @@ describe('Core Auctionary flows (isolated database)', () => {
         assert.equal((await request('POST', `/question/${questionId}`, { answer_text: 'Yes' }, seller.session_token)).status, 200);
         assert.equal((await request('GET', `/item/${itemId}/question`)).data[0].answer_text, 'Yes');
     });
+    it('allows question authors to delete their own questions', async () => {
+        assert.equal((await request('POST', `/item/${itemId}/question`, { question_text: 'Can this be deleted?' }, buyer.session_token)).status, 200);
+        const ownQuestionId = (await request('GET', `/item/${itemId}/question`)).data[0].question_id;
+        assert.equal((await request('DELETE', `/question/${ownQuestionId}`, undefined, seller.session_token)).status, 403);
+        assert.equal((await request('DELETE', `/question/${ownQuestionId}`, undefined, buyer.session_token)).status, 200);
+    });
     it('allows administrators to delete questions and mute or unmute users', async () => {
         await request('POST', '/users', { first_name: 'Observer', last_name: 'Test', email: 'observer@example.com', password: 'Example123!' });
         const observer = (await request('POST', '/login', { email: 'observer@example.com', password: 'Example123!' })).data;

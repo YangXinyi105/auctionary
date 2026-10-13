@@ -20,10 +20,10 @@
         <textarea :id="`answer-${question.question_id}`" v-model.trim="answers[question.question_id]" required maxlength="2000" rows="2"></textarea>
         <button :disabled="busy">{{ busy ? $t('Saving...', '保存中…') : $t('Save answer', '保存回答') }}</button>
       </form>
-      <div v-if="isAdmin" class="moderation">
+      <div v-if="isAdmin || question.asked_by === currentUserId" class="moderation">
         <button type="button" :disabled="busy" @click="removeQuestion(question)">{{ $t('Delete question', '删除问题') }}</button>
-        <button v-if="!(question.muted_until && question.muted_until * 1000 > Date.now())" type="button" :disabled="busy || question.asked_by === currentUserId" @click="mute(question, 24)">{{ $t('Mute for 24 hours', '禁言 24 小时') }}</button>
-        <button v-else type="button" :disabled="busy" @click="mute(question, 0)">{{ $t('Unmute user', '解除禁言') }}</button>
+        <button v-if="isAdmin && !(question.muted_until && question.muted_until * 1000 > Date.now())" type="button" :disabled="busy || question.asked_by === currentUserId" @click="mute(question, 24)">{{ $t('Mute for 24 hours', '禁言 24 小时') }}</button>
+        <button v-else-if="isAdmin" type="button" :disabled="busy" @click="mute(question, 0)">{{ $t('Unmute user', '解除禁言') }}</button>
       </div>
     </article>
     <form v-if="signedIn && !isSeller" @submit.prevent="ask">
