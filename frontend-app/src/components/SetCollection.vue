@@ -8,7 +8,15 @@
     <p v-if="!loading && !loadFailed && !entries.length" class="empty">{{ t('还没有记录。添加你正在收集的第一套乐高。', 'No sets yet. Add the first set you are collecting.') }}</p>
     <article v-for="entry in entries" :key="entry.collection_id" class="entry">
       <div class="entry-heading"><h3>{{ entry.name }}</h3><strong>{{ percent(entry) }}%</strong></div>
-      <progress :value="entry.collected" :max="entry.total" :aria-label="entry.name"></progress>
+      <div class="brick-progress" aria-hidden="true">
+        <span
+          v-for="brick in 20"
+          :key="brick"
+          class="brick"
+          :class="{ filled: brick <= filledBricks(entry) }"
+        ></span>
+      </div>
+      <progress class="semantic-progress" :value="entry.collected" :max="entry.total" :aria-label="entry.name"></progress>
       <div class="entry-footer"><span>{{ entry.collected.toLocaleString() }} / {{ entry.total.toLocaleString() }} {{ t('套', 'sets') }} · {{ entry.collected === entry.total ? t('已集齐', 'Complete') : t(`还差 ${entry.total - entry.collected} 套`, `${entry.total - entry.collected} remaining`) }}</span>
         <button type="button" :disabled="busy" @click="start(entry)">{{ t('更新进度', 'Update') }}</button></div>
     </article>
@@ -38,6 +46,7 @@ export default {
     language() { this.zh = localStorage.getItem('lang') === 'zh'; },
     t(zh, en) { return this.zh ? zh : en; },
     percent(entry) { return entry.collected === entry.total ? 100 : Math.floor(entry.collected / entry.total * 100); },
+    filledBricks(entry) { return Math.round(this.percent(entry) / 5); },
     options() { return { headers: { 'X-Authorization': localStorage.getItem('session_token') }, timeout: 10000 }; },
     async load() {
       this.loading = true; this.error = ''; this.loadFailed = false;
@@ -81,12 +90,16 @@ h2 { margin: 0; font-size: 1.4rem; } h3 { margin: 0; font-size: 1rem; overflow-w
 .hint, .empty, .entry-footer { color: var(--muted); font-size: .85rem; line-height: 1.6; }
 .empty { padding: 20px 0; } .entry { padding: 22px 0; border-top: 1px solid var(--line); }
 .entry-heading strong { font-variant-numeric: tabular-nums; color: var(--accent); }
-progress { display: block; width: 100%; height: 9px; margin: 14px 0 10px; border: 0; border-radius: 5px; overflow: hidden; background: var(--line); accent-color: var(--accent); }
-progress::-webkit-progress-bar { background: var(--line); } progress::-webkit-progress-value { background: var(--accent); } progress::-moz-progress-bar { background: var(--accent); }
+.brick-progress { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 5px; margin: 22px 0 14px; padding-top: 5px; }
+.brick { position: relative; height: 18px; border: 1px solid #c9c3b2; border-radius: 3px; background: #e8e4d8; box-shadow: inset 0 -3px 0 #d3cebf, 0 2px 0 #bbb5a5; }
+.brick::before { content: ''; position: absolute; width: 46%; height: 5px; left: 27%; top: -6px; border: 1px solid #c9c3b2; border-bottom: 0; border-radius: 3px 3px 0 0; background: #e8e4d8; }
+.brick.filled { border-color: #12652e; background: var(--lego-green); box-shadow: inset 0 -3px 0 #12652e, 0 2px 0 #0d4d22; }
+.brick.filled::before { border-color: #12652e; background: var(--lego-green); }
+.semantic-progress { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 button { padding: 9px 13px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface); color: var(--ink); cursor: pointer; }
 button:disabled { opacity: .55; cursor: wait; } button:hover:not(:disabled) { border-color: var(--accent); }
 form { display: grid; gap: 18px; padding: 22px; background: var(--surface-muted); border-radius: var(--radius); }
 label { display: grid; gap: 8px; font-size: .85rem; } input { width: 100%; min-width: 0; padding: 11px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface); color: var(--ink); }
 .counts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; } .actions { justify-content: flex-start; } .save { background: var(--accent); color: white; border-color: var(--accent); } .remove { margin-left: auto; color: var(--danger); } .error { color: var(--danger); }
-@media(max-width: 520px) { .counts { grid-template-columns: 1fr; } form { padding: 16px; } }
+@media(max-width: 520px) { .counts { grid-template-columns: 1fr; } form { padding: 16px; } .brick-progress { grid-template-columns: repeat(10, minmax(0, 1fr)); row-gap: 12px; } }
 </style>
