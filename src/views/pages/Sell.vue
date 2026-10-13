@@ -319,6 +319,18 @@ export default {
   margin: 0;
 }
 
+.feedback .primary-button {
+  min-width: 96px;
+  min-height: 44px;
+  padding: 11px 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  line-height: 1.2;
+  font-size: 0.92rem;
+}
+
 .listing-form {
   margin-top: 30px;
   display: grid;
