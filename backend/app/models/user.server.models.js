@@ -52,6 +52,17 @@ const findByEmail = (email, done) => {
 
 };
 
+const findByRecoveryIdentity = (email, firstName, lastName, done) => {
+    db.get(
+        `SELECT user_id FROM users
+         WHERE lower(trim(email))=lower(trim(?))
+         AND lower(trim(first_name))=lower(trim(?))
+         AND lower(trim(last_name))=lower(trim(?))`,
+        [email, firstName, lastName],
+        done
+    );
+};
+
 const saveToken = (user_id, token, done)=>{
 
 
@@ -124,6 +135,7 @@ const updateAvatar = (user_id, avatarUrl, done) => db.run('UPDATE users SET avat
 module.exports = {
     addUser,
     findByEmail,
+    findByRecoveryIdentity,
     saveToken,
     removeToken,
     findByToken,

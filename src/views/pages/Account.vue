@@ -63,6 +63,7 @@
           <p>{{ $t('You can change your password here.', '你可以在这里修改密码。') }}</p>
           <div>
             <button class="primary-button" type="button" @click="editing = true; message = ''">{{ $t('Change password', '修改密码') }}</button>
+            <button class="secondary-button" type="button" @click="logout">{{ $t('Sign out', '退出登录') }}</button>
           </div>
         </section>
 
@@ -220,6 +221,13 @@ export default {
       } catch (error) {
         this.message = error.response?.data?.error_message || this.$t('Password could not be updated.', '无法更新密码。');
       }
+    },
+    async logout() {
+      try { await axios.post(`${API}/logout`, {}, this.options()); } catch { /* Clear local state even if the session has expired. */ }
+      localStorage.removeItem('session_token');
+      localStorage.removeItem('user_id');
+      window.dispatchEvent(new Event('auth-change'));
+      this.$router.push('/login');
     }
   }
 };

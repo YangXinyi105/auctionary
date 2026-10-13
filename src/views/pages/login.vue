@@ -2,12 +2,12 @@
   <main class="auth">
     <section class="panel" aria-labelledby="auth-title">
       <header>
-        <h1 id="auth-title">{{ register ? $t('Create an account', '创建账户') : $t('Sign in', '登录') }}</h1>
-        <p>{{ register ? $t('Register before listing a set or placing a bid.', '注册后即可发布套装或参与竞价。') : $t('Use your collector account to continue.', '登录收藏者账户以继续。') }}</p>
+        <h1 id="auth-title">{{ forgot ? $t('Reset password', '重置密码') : register ? $t('Create an account', '创建账户') : $t('Sign in', '登录') }}</h1>
+        <p>{{ forgot ? $t('Enter the complete account details used at registration.', '完整输入注册时使用的邮箱和姓名。') : register ? $t('Register before listing a set or placing a bid.', '注册后即可发布套装或参与竞价。') : $t('Use your collector account to continue.', '登录收藏者账户以继续。') }}</p>
       </header>
 
       <form @submit.prevent="submit">
-        <div v-if="register" class="row">
+        <div v-if="register || forgot" class="row">
           <label>
             <span>{{ $t('First name', '名字') }}</span>
             <input v-model="form.first_name" autocomplete="given-name" required />
@@ -23,27 +23,30 @@
           <input v-model="form.email" type="email" autocomplete="email" required />
         </label>
         <label>
-          <span>{{ $t('Password', '密码') }}</span>
+          <span>{{ forgot ? $t('New password', '新密码') : $t('Password', '密码') }}</span>
           <input
             v-model="form.password"
             type="password"
-            :autocomplete="register ? 'new-password' : 'current-password'"
-            :minlength="register ? 8 : null"
-            :maxlength="register ? 32 : null"
-            :pattern="register ? '(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,32}' : null"
-            :title="register ? $t('Use 8–32 characters with uppercase, lowercase, a number and a symbol.', '使用 8–32 个字符，并包含大小写字母、数字和特殊符号。') : ''"
+            :autocomplete="register || forgot ? 'new-password' : 'current-password'"
+            :minlength="register || forgot ? 8 : null"
+            :maxlength="register || forgot ? 32 : null"
+            :pattern="register || forgot ? '(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,32}' : null"
+            :title="register || forgot ? $t('Use 8–32 characters with uppercase, lowercase, a number and a symbol.', '使用 8–32 个字符，并包含大小写字母、数字和特殊符号。') : ''"
             required
           />
-          <small v-if="register">{{ $t('8–32 characters with uppercase, lowercase, a number and a symbol.', '8–32 个字符，包含大小写字母、数字和特殊符号。') }}</small>
+          <small v-if="register || forgot">{{ $t('8–32 characters with uppercase, lowercase, a number and a symbol.', '8–32 个字符，包含大小写字母、数字和特殊符号。') }}</small>
         </label>
 
-        <button class="submit" type="submit">{{ register ? $t('Create account', '创建账户') : $t('Sign in', '登录') }}</button>
+        <button class="submit" type="submit" :disabled="submitting">{{ submitting ? $t('Please wait...', '请稍候…') : forgot ? $t('Reset password', '重置密码') : register ? $t('Create account', '创建账户') : $t('Sign in', '登录') }}</button>
         <p v-if="message" class="message" role="status">{{ message }}</p>
       </form>
 
-      <button class="switch" type="button" @click="register = !register; message = ''">
-        {{ register ? $t('Already have an account? Sign in', '已有账户？立即登录') : $t('New here? Create an account', '还没有账户？立即注册') }}
-      </button>
+      <div class="auth-links">
+        <button v-if="!register && !forgot" class="switch" type="button" @click="showForgot">{{ $t('Forgot your password?', '忘记密码？') }}</button>
+        <button class="switch" type="button" @click="switchMode">
+          {{ forgot || register ? $t('Back to sign in', '返回登录') : $t('New here? Create an account', '还没有账户？立即注册') }}
+        </button>
+      </div>
     </section>
   </main>
 </template>
@@ -55,6 +58,8 @@ import { apiUrl } from '../../services/api';
 export default {
   data: () => ({
     register: false,
+    forgot: false,
+    submitting: false,
     message: '',
     form: {
       first_name: '',
@@ -67,15 +72,30 @@ export default {
     if (this.$route.query.passwordChanged) this.message = this.$t('Password updated. Sign in with your new password.', '密码已更新，请使用新密码登录。');
   },
   methods: {
-    async submit() {
+    clearPassword() { this.form.password = ''; },
+    showForgot() { this.register = false; this.forgot = true; this.message = ''; this.clearPassword(); },
+    switchMode() {
+      if (this.register || this.forgot) { this.register = false; this.forgot = false; }
+      else this.register = true;
       this.message = '';
+      this.clearPassword();
+    },
+    async submit() {
+      if (this.submitting) return;
+      this.message = '';
+      this.submitting = true;
       try {
-        const url = apiUrl(this.register ? '/users' : '/login');
-        const response = await axios.post(url, this.register ? this.form : { email: this.form.email, password: this.form.password });
-        if (this.register) {
+        const url = apiUrl(this.forgot ? '/users/password-reset' : this.register ? '/users' : '/login');
+        const body = this.register || this.forgot ? this.form : { email: this.form.email, password: this.form.password };
+        const response = await axios.post(url, body);
+        if (this.forgot) {
+          this.message = this.$t('Password reset. Sign in with your new password.', '密码已重置，请使用新密码登录。');
+          this.forgot = false;
+          this.clearPassword();
+        } else if (this.register) {
           this.message = this.$t('Account created. You can now sign in.', '账户已创建，现在可以登录。');
           this.register = false;
-          this.form.password = '';
+          this.clearPassword();
         } else {
           localStorage.setItem('session_token', response.data.session_token);
           localStorage.setItem('user_id', response.data.user_id);
@@ -83,7 +103,10 @@ export default {
           this.$router.push('/');
         }
       } catch (error) {
-        this.message = error.response?.data?.error_message || this.$t('Please check your details and try again.', '请检查填写的信息后重试。');
+        if (this.forgot && error.response?.status === 400) this.message = this.$t('The email and name do not match an account, or the new password is invalid.', '邮箱与姓名不匹配，或新密码不符合要求。');
+        else this.message = error.response?.data?.error_message || this.$t('Please check your details and try again.', '请检查填写的信息后重试。');
+      } finally {
+        this.submitting = false;
       }
     }
   }
@@ -177,8 +200,15 @@ input {
   line-height: 1.5;
 }
 
-.switch {
+.auth-links {
   margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.switch {
   padding: 0;
   border: 0;
   background: transparent;
@@ -186,6 +216,8 @@ input {
   font-size: 0.84rem;
   text-align: left;
 }
+
+.switch:last-child { margin-left: auto; }
 
 .switch:hover {
   color: var(--accent);

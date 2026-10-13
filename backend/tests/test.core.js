@@ -130,4 +130,13 @@ describe('Core Auctionary flows (isolated database)', () => {
         assert.match(row.password, /^scrypt\$/);
         assert.ok(!row.password.includes('Replacement123!'));
     });
+    it('resets a password only when the complete email and name match', async () => {
+        const valid = { email: 'seller@example.com', first_name: 'seller', last_name: 'Test', password: 'Recovery123!' };
+        const rejected = await request('POST', '/users/password-reset', { ...valid, first_name: 'wrong' });
+        assert.equal(rejected.status, 400);
+        assert.ok(!JSON.stringify(rejected.data).includes(valid.email));
+        assert.equal((await request('POST', '/users/password-reset', valid)).status, 200);
+        assert.equal((await request('POST', '/login', { email: valid.email, password: 'Replacement123!' })).status, 400);
+        assert.equal((await request('POST', '/login', { email: valid.email, password: valid.password })).status, 200);
+    });
 });

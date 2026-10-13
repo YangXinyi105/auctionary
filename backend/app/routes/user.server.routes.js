@@ -15,6 +15,7 @@ module.exports = function(app){
     app.post('/logout', userController.logout);
     app.get('/users/me', userController.getCurrentUser);
     app.put('/users/password', userController.changePassword);
+    app.post('/users/password-reset', userController.resetPassword);
     app.put('/users/avatar', userController.updateAvatar);
 
 };

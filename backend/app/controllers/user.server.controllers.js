@@ -162,6 +162,32 @@ const changePassword = (req, res) => {
     });
 };
 
+const resetPassword = (req, res) => {
+    const schema = Joi.object({
+        email: Joi.string().email({ tlds: { allow: false } }).required(),
+        first_name: Joi.string().trim().min(1).max(100).required(),
+        last_name: Joi.string().trim().min(1).max(100).required(),
+        password: Joi.string()
+            .min(8)
+            .max(32)
+            .pattern(/[a-z]/)
+            .pattern(/[A-Z]/)
+            .pattern(/[0-9]/)
+            .pattern(/[^A-Za-z0-9]/)
+            .required()
+    });
+    const { error, value } = schema.validate(req.body);
+    if (error) return res.status(400).json({ error_message: error.details[0].message });
+    userModel.findByRecoveryIdentity(value.email, value.first_name, value.last_name, (lookupErr, user) => {
+        if (lookupErr) return res.sendStatus(500);
+        if (!user) return res.status(400).json({ error_message: 'The account details do not match.' });
+        userModel.updatePassword(user.user_id, value.password, updateErr => {
+            if (updateErr) return res.sendStatus(500);
+            res.json({ message: 'Password reset. Sign in with your new password.' });
+        });
+    });
+};
+
 const updateAvatar = (req, res) => {
     const token = req.get('X-Authorization');
     const avatarUrl = req.body.avatar_url;
@@ -182,5 +208,6 @@ module.exports = {
     logout,
     getCurrentUser,
     changePassword,
+    resetPassword,
     updateAvatar
 };
