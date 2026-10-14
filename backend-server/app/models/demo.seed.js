@@ -23,7 +23,9 @@ const items = [
 ];
 
 async function seed() {
-    if (process.env.AUCTION_DB === ':memory:' || process.env.NODE_ENV === 'test' || process.env.SEED_DEMO === 'false') return;
+    // Keep the database empty by default so the official API tests can create
+    // their own fixtures. Enable demo content explicitly for the screencast.
+    if (process.env.SEED_DEMO !== 'true') return;
     const hasData = (await get('SELECT COUNT(*) count FROM users')).count || (await get('SELECT COUNT(*) count FROM items')).count;
     if (hasData) {
         if (!await get('SELECT user_id FROM users WHERE email=?', ['admin@auctionary.example'])) {
